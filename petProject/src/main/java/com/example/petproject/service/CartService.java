@@ -31,18 +31,19 @@ public class CartService {
         return baseDtoMapper.toCartDTO(cart);
     }
 
-//    public Cart addToCart(long productId, int quantity, long userId) {
-//        Product product = productRepository.findProductById(productId);
-//        if (quantity <= product.getQuantity()) {
-//            Cart.builder()
-//                    .product(product)
-//                    .quantity(quantity)
-//                    .price(product.getCurrentPrice())
-//                    .createDate(LocalDateTime.now())
-//                    .status(CartStatus.NEW)
-//                    .
-//        }
-//    }
+    public CartDTO addToCart(CartDTO cartDTO) {
+        cartDTO.
+        Product product = productRepository.findProductById(productId);
+        if (quantity <= product.getQuantity()) {
+            Cart.builder()
+                    .product(product)
+                    .quantity(quantity)
+                    .price(product.getCurrentPrice())
+                    .createDate(LocalDateTime.now())
+                    .status(CartStatus.NEW)
+                    .
+        }
+    }
 
 //    private boolean isProductPriceAndQuantityCorrect(List<CartDTO> cartDTOS) {
 //

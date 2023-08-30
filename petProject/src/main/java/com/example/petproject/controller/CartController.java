@@ -3,10 +3,7 @@ package com.example.petproject.controller;
 import com.example.petproject.dto.CartDTO;
 import com.example.petproject.service.CartService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @AllArgsConstructor
 @RestController
@@ -20,4 +17,8 @@ public class CartController {
         return cartService.getCartByUserId(userId);
     }
 
+    @PostMapping
+    public CartDTO saveCart(@RequestBody CartDTO cartDTO) {
+
+    }
 }
