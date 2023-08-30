@@ -9,7 +9,7 @@ import lombok.*;
 public class ProductCartDTO {
 
     private long id;
-    private ProductDTO product;
+    private long productId;
     private int quantity;
     private double price;
     private double total;

@@ -30,13 +30,13 @@ public class BaseDtoMapper {
     public CartDTO toCartDTO(Cart cart) {
         CartDTO cartDTO = toDTO(cart, CartDTO.class);
         cartDTO.setProducts(toProductCartDTOList(cart.getProducts()));
-        cartDTO.setUser(toDTO(cart.getUser(), PublicUserDTO.class));
+        cartDTO.setUserId(cart.getUser().getId());
         return cartDTO;
     }
 
     public ProductCartDTO toProductCartDTO(ProductCart entity) {
         ProductCartDTO productCartDTO = toDTO(entity, ProductCartDTO.class);
-        productCartDTO.setProduct(toDTO(entity.getProduct(), ProductDTO.class));
+        productCartDTO.setProductId(entity.getProduct().getId());
         return productCartDTO;
     }
 

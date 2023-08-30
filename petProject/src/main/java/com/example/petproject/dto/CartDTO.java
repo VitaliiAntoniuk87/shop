@@ -17,7 +17,7 @@ public class CartDTO {
 
     private long id;
     private List<ProductCartDTO> products;
-    private PublicUserDTO user;
+    private long userId;
     private Double sum;
     private LocalDateTime createDate;
 }
