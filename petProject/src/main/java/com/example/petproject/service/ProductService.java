@@ -1,5 +1,7 @@
 package com.example.petproject.service;
 
+import com.example.petproject.dto.CartDTO;
+import com.example.petproject.dto.ProductCartDTO;
 import com.example.petproject.dto.ProductDTO;
 import com.example.petproject.entity.Product;
 import com.example.petproject.mapper.BaseDtoMapper;
@@ -10,6 +12,7 @@ import lombok.Data;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.LongStream;
 
 @Service
 @Data
@@ -31,5 +34,34 @@ public class ProductService {
         List<Product> products = productRepository.findProductsByCategoryId(categoryId);
         return products.stream()
                 .map(product -> baseDtoMapper.toDTO(product, ProductDTO.class)).toList();
+    }
+
+    public boolean isProductsPriceAndQuantityCorrect(CartDTO cartDTO) {
+        List<ProductCartDTO> productCartDTO = cartDTO.getProducts();
+        List<Long> productIds = productCartDTO.stream().mapToLong(ProductCartDTO::getProductId).boxed().toList();
+        List<Product> productsFromDatabase = productRepository.findAllByIdIn(productIds);
+
+        for (ProductCartDTO element : productCartDTO) {
+
+            long productId = element.getProductId();
+            int quantity = element.getQuantity();
+            double price = element.getPrice();
+
+            Product productFromDatabase = productsFromDatabase.stream()
+                    .filter(product -> product.getId() == productId)
+                    .findFirst()
+                    .orElse(null);
+
+            if (productFromDatabase == null) {
+                return false;
+            }
+            if (productFromDatabase.getCurrentPrice() != price ||
+                    productFromDatabase.getQuantity() < quantity) {
+                return false;
+            }
+
+        }
+        return true;
+
     }
 }

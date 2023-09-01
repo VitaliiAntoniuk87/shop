@@ -27,23 +27,12 @@ public class BaseDtoMapper {
         return modelMapper.map(dto, entityClass);
     }
 
-    public CartDTO toCartDTO(Cart cart) {
-        CartDTO cartDTO = toDTO(cart, CartDTO.class);
-        cartDTO.setProducts(toProductCartDTOList(cart.getProducts()));
-        cartDTO.setUserId(cart.getUser().getId());
-        return cartDTO;
+    public <E, D> List<D> toDTOList(List<E> entity, Class<D> dtoClass) {
+        return entity.stream().map(e -> toDTO(e, dtoClass)).toList();
     }
 
-    public ProductCartDTO toProductCartDTO(ProductCart entity) {
-        ProductCartDTO productCartDTO = toDTO(entity, ProductCartDTO.class);
-        productCartDTO.setProductId(entity.getProduct().getId());
-        return productCartDTO;
-    }
-
-    public List<ProductCartDTO> toProductCartDTOList(List<ProductCart> entities) {
-        return entities.stream()
-                .map(this::toProductCartDTO)
-                .collect(Collectors.toList());
+    public <E, D> List<E> toEntityList(List<D> dto, Class<E> entityClass) {
+        return dto.stream().map(d -> toDTO(d, entityClass)).toList();
     }
 
 
