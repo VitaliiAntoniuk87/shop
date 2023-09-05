@@ -21,4 +21,8 @@ public class ProductCartService {
         return productCartRepository.saveAll(productCart);
     }
 
+    public ProductCart save(ProductCart productCart) {
+        return productCartRepository.save(productCart);
+    }
+
 }

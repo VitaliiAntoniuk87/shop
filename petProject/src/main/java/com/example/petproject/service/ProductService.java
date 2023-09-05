@@ -4,6 +4,7 @@ import com.example.petproject.dto.CartDTO;
 import com.example.petproject.dto.ProductCartDTO;
 import com.example.petproject.dto.ProductDTO;
 import com.example.petproject.entity.Product;
+import com.example.petproject.entity.ProductCart;
 import com.example.petproject.mapper.BaseDtoMapper;
 import com.example.petproject.repository.ProductRepository;
 import lombok.AllArgsConstructor;
@@ -64,13 +65,27 @@ public class ProductService {
 
     }
 
-    public int reduceQuantity(List<ProductCartDTO> products) {
+    public int reduceProductQuantity(List<ProductCartDTO> products) {
         int counter = 0;
         for (ProductCartDTO product : products) {
             counter += productRepository.updateQuantity(product.getProductId(), -1 * product.getQuantity());
         }
         return counter;
     }
+
+    public int reduceProductQuantity(long productId, int quantity) {
+        return productRepository.updateQuantity(productId, -1 * quantity);
+    }
+
+
+    public int reduceProductQuantityWithEntity(List<ProductCart> products) {
+        int counter = 0;
+        for (ProductCart product : products) {
+            counter += productRepository.updateQuantity(product.getProduct().getId(), -1 * product.getQuantity());
+        }
+        return counter;
+    }
+
 
     public int increaseQuantity(List<ProductCartDTO> products) {
         int counter = 0;
@@ -80,6 +95,13 @@ public class ProductService {
         return counter;
     }
 
+    public int increaseProductQuantityWithEntity(List<ProductCart> products) {
+        int counter = 0;
+        for (ProductCart product : products) {
+            counter += productRepository.updateQuantity(product.getProduct().getId(), product.getQuantity());
+        }
+        return counter;
+    }
 
 
 }

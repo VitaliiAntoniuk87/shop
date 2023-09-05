@@ -23,14 +23,18 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     Cart findByUserIdAndStatus(long id, CartStatus status);
 
+    Cart findCartById(long id);
+
     List<Cart> findAllByIdAndStatus(long id, CartStatus status);
 
     int deleteByUserIdAndStatus(long id, CartStatus status);
 
+    int deleteById(long cartId);
+
 
     @Modifying
     @Query("""
-            UPDATE Cart c SET c.sum = :newSum
+            UPDATE Cart c SET c.sum = c.sum + :newSum
             WHERE c.status = 'NEW' AND c.id = :cartId
             """)
     int updateCartSumWhenStatusNewById(

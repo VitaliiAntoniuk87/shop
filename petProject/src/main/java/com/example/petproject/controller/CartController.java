@@ -5,6 +5,7 @@ import com.example.petproject.entity.Cart;
 import com.example.petproject.mapper.CartDtoMapper;
 import com.example.petproject.service.CartService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 
 @AllArgsConstructor
@@ -28,8 +29,23 @@ public class CartController {
         return cartService.saveCart(cartDTO);
     }
 
-    @DeleteMapping("/{userId}")
-    public int deleteCart(@PathVariable long userId) {
-        return cartService.deleteCart(userId);
+    @DeleteMapping
+    public int deleteCart(@RequestBody CartDTO cartDTO) {
+        return cartService.deleteCart(cartDTO);
+    }
+
+    @PostMapping("/{cartId}/product/{productId}")
+    public CartDTO addProductToCart(@PathVariable long cartId, @PathVariable long productId, @Param("quantity") int quantity) {
+        return cartService.addProductToCart(cartId, productId, quantity);
+    }
+
+    @DeleteMapping("/{cartId}/product/{productId}")
+    public CartDTO removeProductFromCart(@PathVariable long cartId, @PathVariable long productId) {
+        //TODO removeProductFromCart
+    }
+
+    @PutMapping("/{userId}/product/{productId}")
+    public CartDTO updateProductInCart(@PathVariable long userId, @PathVariable long productId, @Param("quantity") int quantity) {
+        //TODO updateProductInCart
     }
 }

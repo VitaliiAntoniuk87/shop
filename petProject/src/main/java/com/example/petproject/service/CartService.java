@@ -3,19 +3,21 @@ package com.example.petproject.service;
 import com.example.petproject.dto.CartDTO;
 import com.example.petproject.entity.Cart;
 import com.example.petproject.entity.CartStatus;
+import com.example.petproject.entity.Product;
 import com.example.petproject.entity.ProductCart;
 import com.example.petproject.mapper.CartDtoMapper;
 import com.example.petproject.mapper.ProductCartDtoMapper;
 import com.example.petproject.repository.CartRepository;
+import com.example.petproject.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.function.ToDoubleBiFunction;
 
 @Service
 @Data
@@ -28,6 +30,7 @@ public class CartService {
     private final ProductService productService;
     private final ProductCartService productCartService;
     private final CartRepository cartRepository;
+    private final ProductRepository productRepository;
 
     public CartDTO getCartByUserId(long id) {
         Cart cart = cartRepository.findByUserIdAndStatus(id, CartStatus.NEW);
@@ -47,14 +50,36 @@ public class CartService {
 
             cartDTO.setId(savedCart.getId());
             cartDTO.setCreateDate(LocalDateTime.now());
-            productService.reduceQuantity(cartDTO.getProducts());
+            productService.reduceProductQuantity(cartDTO.getProducts());
         }
         return cartDTO;
     }
 
     @Transactional
-    public int deleteCart(long userId) {
-        return cartRepository.deleteByUserIdAndStatus(userId, CartStatus.NEW);
+    public int deleteCart(CartDTO cartDTO) {
+        productService.increaseQuantity(cartDTO.getProducts());
+        return cartRepository.deleteById(cartDTO.getId());
+    }
+
+    @Transactional
+    public CartDTO addProductToCart(long cartId, long productId, int quantity) {
+        Product product = productRepository.findProductById(productId);
+        ProductCart productCart = ProductCart.builder()
+                .product(product)
+                .cart(Cart.builder().id(cartId).build())
+                .price(product.getCurrentPrice())
+                .quantity(quantity)
+                .total(MathServices.roundToHundredths(quantity * product.getCurrentPrice()))
+                .build();
+        productCartService.save(productCart);
+        cartRepository.updateCartSumWhenStatusNewById(productCart.getTotal(), cartId);
+        productService.reduceProductQuantity(productId, quantity);
+        return cartDtoMapper.toCartDTO(cartRepository.findCartById(cartId));
+
+    }
+
+    public CartDTO removeProductFromCart(long cartId, long productId, int quantity) {
+
     }
 
 

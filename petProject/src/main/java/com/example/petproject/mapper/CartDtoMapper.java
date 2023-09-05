@@ -5,6 +5,7 @@ import com.example.petproject.dto.ProductCartDTO;
 import com.example.petproject.entity.Cart;
 import com.example.petproject.entity.CartStatus;
 import com.example.petproject.entity.User;
+import com.example.petproject.service.MathServices;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -31,13 +32,9 @@ public class CartDtoMapper extends BaseDtoMapper {
         Cart cart = toEntity(cartDTO, Cart.class);
         cart.setUser(User.builder().id(cartDTO.getUserId()).build());
         cart.setStatus(CartStatus.NEW);
-        cart.setSum(roundToHundredths(cartDTO.getProducts().stream().mapToDouble(ProductCartDTO::getTotal).sum()));
+        cart.setSum(MathServices.roundToHundredths(cartDTO.getProducts().stream().mapToDouble(ProductCartDTO::getTotal).sum()));
         cart.setProducts(productCartDtoMapper.toProductCartEntityList(cartDTO.getProducts()));
         return cart;
-    }
-
-    private double roundToHundredths(double value) {
-        return Math.round(value * 100.0) / 100.0;
     }
 
 }
