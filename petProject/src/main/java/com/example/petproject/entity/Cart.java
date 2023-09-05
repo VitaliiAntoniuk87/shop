@@ -32,7 +32,7 @@ public class Cart {
 
     private Double sum;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "cart", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<ProductCart> products = new ArrayList<>();
 
     @Enumerated(value = EnumType.STRING)
@@ -40,6 +40,5 @@ public class Cart {
 
     @Column(name = "create_date")
     private LocalDateTime createDate;
-
 
 }

@@ -31,8 +31,13 @@ public class CartDtoMapper extends BaseDtoMapper {
         Cart cart = toEntity(cartDTO, Cart.class);
         cart.setUser(User.builder().id(cartDTO.getUserId()).build());
         cart.setStatus(CartStatus.NEW);
-        cart.setSum(cartDTO.getProducts().stream().mapToDouble(ProductCartDTO::getPrice).sum());
+        cart.setSum(roundToHundredths(cartDTO.getProducts().stream().mapToDouble(ProductCartDTO::getTotal).sum()));
         cart.setProducts(productCartDtoMapper.toProductCartEntityList(cartDTO.getProducts()));
         return cart;
     }
+
+    private double roundToHundredths(double value) {
+        return Math.round(value * 100.0) / 100.0;
+    }
+
 }

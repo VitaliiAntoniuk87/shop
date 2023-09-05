@@ -25,7 +25,8 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     List<Cart> findAllByIdAndStatus(long id, CartStatus status);
 
-    int deleteAllByIdAndStatus(long id, CartStatus status);
+    int deleteByUserIdAndStatus(long id, CartStatus status);
+
 
     @Modifying
     @Query("""

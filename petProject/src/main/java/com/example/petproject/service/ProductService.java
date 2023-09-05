@@ -12,7 +12,6 @@ import lombok.Data;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.LongStream;
 
 @Service
 @Data
@@ -64,4 +63,23 @@ public class ProductService {
         return true;
 
     }
+
+    public int reduceQuantity(List<ProductCartDTO> products) {
+        int counter = 0;
+        for (ProductCartDTO product : products) {
+            counter += productRepository.updateQuantity(product.getProductId(), -1 * product.getQuantity());
+        }
+        return counter;
+    }
+
+    public int increaseQuantity(List<ProductCartDTO> products) {
+        int counter = 0;
+        for (ProductCartDTO product : products) {
+            counter += productRepository.updateQuantity(product.getProductId(), product.getQuantity());
+        }
+        return counter;
+    }
+
+
+
 }

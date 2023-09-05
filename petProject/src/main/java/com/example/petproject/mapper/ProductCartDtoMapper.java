@@ -32,6 +32,7 @@ public class ProductCartDtoMapper extends BaseDtoMapper {
     public ProductCart toProductCartEntity(ProductCartDTO productCartDTO) {
         ProductCart productCart = toEntity(productCartDTO, ProductCart.class);
         productCart.setProduct(Product.builder().id(productCartDTO.getProductId()).build());
+        productCart.setTotal(productCartDTO.getPrice() * productCartDTO.getQuantity());
         return productCart;
     }
 
