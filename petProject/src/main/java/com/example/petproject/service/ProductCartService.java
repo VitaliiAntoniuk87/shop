@@ -25,4 +25,8 @@ public class ProductCartService {
         return productCartRepository.save(productCart);
     }
 
+    public int deleteAllByCartIdAndProductId(long cartId, long productId) {
+        return productCartRepository.deleteAllByCartIdAndProductId(cartId, productId);
+    }
+
 }

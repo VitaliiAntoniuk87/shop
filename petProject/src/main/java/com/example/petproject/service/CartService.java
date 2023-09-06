@@ -1,6 +1,7 @@
 package com.example.petproject.service;
 
 import com.example.petproject.dto.CartDTO;
+import com.example.petproject.dto.ProductCartDTO;
 import com.example.petproject.entity.Cart;
 import com.example.petproject.entity.CartStatus;
 import com.example.petproject.entity.Product;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.IntStream;
 
 @Service
 @Data
@@ -34,6 +37,11 @@ public class CartService {
 
     public CartDTO getCartByUserId(long id) {
         Cart cart = cartRepository.findByUserIdAndStatus(id, CartStatus.NEW);
+        return cartDtoMapper.toCartDTO(cart);
+    }
+
+    public CartDTO getCartByIdAndStatus(long id) {
+        Cart cart = cartRepository.findCartByIdAndStatus(id, CartStatus.NEW);
         return cartDtoMapper.toCartDTO(cart);
     }
 
@@ -62,29 +70,44 @@ public class CartService {
     }
 
     @Transactional
-    public CartDTO addProductToCart(long cartId, long productId, int quantity) {
+    public void addProductToCart(long cartId, long productId, int quantity) {
         Product product = productRepository.findProductById(productId);
-        Cart cart = cartRepository.findCartById(cartId);
-        ProductCart productCart = ProductCart.builder()
-                .product(product)
-                .cart(cart)
-                .price(product.getCurrentPrice())
-                .quantity(quantity)
-                .total(MathServices.roundToHundredths(quantity * product.getCurrentPrice()))
-                .build();
-        productCartService.save(productCart);
-        cartRepository.updateCartSumWhenStatusNewById(productCart.getTotal(), cartId);
-        productService.reduceProductQuantity(productId, quantity);
-
-        Cart updatedCart = cartRepository.findCartById(cartId);
-        System.out.println(updatedCart.getSum());
-        return cartDtoMapper.toCartDTO(updatedCart);
-
+        if (product.getQuantity() >= quantity) {
+            Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
+            ProductCart productCart = ProductCart.builder()
+                    .product(product)
+                    .cart(cart)
+                    .price(product.getCurrentPrice())
+                    .quantity(quantity)
+                    .total(MathServices.roundToHundredths(quantity * product.getCurrentPrice()))
+                    .build();
+            productCartService.save(productCart);
+            cartRepository.updateCartSumWhenStatusNewById(productCart.getTotal(), cartId);
+            productService.reduceProductQuantity(productId, quantity);
+        }
     }
 
-//    public CartDTO removeProductFromCart(long cartId, long productId, int quantity) {
-//
-//    }
+    @Transactional
+    public void removeProductFromCart(CartDTO cartDTO, long productId) {
+        ProductCartDTO productCartDTO = cartDTO.getProducts().stream()
+                .filter(pc -> pc.getProductId() == productId).findFirst().get();
 
+        productCartService.deleteAllByCartIdAndProductId(cartDTO.getId(), productId);
+        cartRepository.updateCartSumWhenStatusNewById(-1 * productCartDTO.getTotal(), cartDTO.getId());
+        productService.increaseQuantity(productCartDTO);
+    }
+
+    public void updateProductQuantityInCart(long cartId, long productId, int quantityDifference) {
+        Product product = productRepository.findProductById(productId);
+        if (quantityDifference > 0) {
+            if (product.getQuantity() >= quantityDifference) {
+                Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
+                ProductCart productCart = cart.getProducts().stream()
+                        .filter(pc -> pc.getProduct().getId() == productId).findFirst().get();
+                productCart.setQuantity(productCart.getQuantity() + quantityDifference);
+                productCart.setTotal();
+            }
+        }
+    }
 
 }

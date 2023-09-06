@@ -95,6 +95,10 @@ public class ProductService {
         return counter;
     }
 
+    public int increaseQuantity(ProductCartDTO product) {
+        return productRepository.updateQuantity(product.getProductId(), product.getQuantity());
+    }
+
     public int increaseProductQuantityWithEntity(List<ProductCart> products) {
         int counter = 0;
         for (ProductCart product : products) {

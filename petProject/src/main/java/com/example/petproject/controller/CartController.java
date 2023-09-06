@@ -2,6 +2,7 @@ package com.example.petproject.controller;
 
 import com.example.petproject.dto.CartDTO;
 import com.example.petproject.entity.Cart;
+import com.example.petproject.entity.CartStatus;
 import com.example.petproject.mapper.CartDtoMapper;
 import com.example.petproject.service.CartService;
 import lombok.AllArgsConstructor;
@@ -36,16 +37,18 @@ public class CartController {
 
     @PostMapping("/{cartId}/product/{productId}")
     public CartDTO addProductToCart(@PathVariable long cartId, @PathVariable long productId, @Param("quantity") int quantity) {
-        return cartService.addProductToCart(cartId, productId, quantity);
+        cartService.addProductToCart(cartId, productId, quantity);
+        return cartService.getCartByIdAndStatus(cartId);
     }
 
-//    @DeleteMapping("/{cartId}/product/{productId}")
-//    public CartDTO removeProductFromCart(@PathVariable long cartId, @PathVariable long productId) {
-//        //TODO removeProductFromCart
-//    }
-//
-//    @PutMapping("/{userId}/product/{productId}")
-//    public CartDTO updateProductInCart(@PathVariable long userId, @PathVariable long productId, @Param("quantity") int quantity) {
-//        //TODO updateProductInCart
-//    }
+    @DeleteMapping("/product/{productId}")
+    public CartDTO removeProductFromCart(@RequestBody CartDTO cartDTO, @PathVariable long productId) {
+        cartService.removeProductFromCart(cartDTO, productId);
+        return cartService.getCartByIdAndStatus(cartDTO.getId());
+    }
+
+    @PutMapping("/{cartId}/product/{productId}")
+    public CartDTO updateProductInCart(@PathVariable long cartId, @PathVariable long productId, @Param("quantity") int quantityDifference) {
+
+    }
 }
