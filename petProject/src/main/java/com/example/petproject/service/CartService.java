@@ -64,9 +64,10 @@ public class CartService {
     @Transactional
     public CartDTO addProductToCart(long cartId, long productId, int quantity) {
         Product product = productRepository.findProductById(productId);
+        Cart cart = cartRepository.findCartById(cartId);
         ProductCart productCart = ProductCart.builder()
                 .product(product)
-                .cart(Cart.builder().id(cartId).build())
+                .cart(cart)
                 .price(product.getCurrentPrice())
                 .quantity(quantity)
                 .total(MathServices.roundToHundredths(quantity * product.getCurrentPrice()))
@@ -74,13 +75,16 @@ public class CartService {
         productCartService.save(productCart);
         cartRepository.updateCartSumWhenStatusNewById(productCart.getTotal(), cartId);
         productService.reduceProductQuantity(productId, quantity);
-        return cartDtoMapper.toCartDTO(cartRepository.findCartById(cartId));
+
+        Cart updatedCart = cartRepository.findCartById(cartId);
+        System.out.println(updatedCart.getSum());
+        return cartDtoMapper.toCartDTO(updatedCart);
 
     }
 
-    public CartDTO removeProductFromCart(long cartId, long productId, int quantity) {
-
-    }
+//    public CartDTO removeProductFromCart(long cartId, long productId, int quantity) {
+//
+//    }
 
 
 }

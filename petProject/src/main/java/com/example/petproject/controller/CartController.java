@@ -39,13 +39,13 @@ public class CartController {
         return cartService.addProductToCart(cartId, productId, quantity);
     }
 
-    @DeleteMapping("/{cartId}/product/{productId}")
-    public CartDTO removeProductFromCart(@PathVariable long cartId, @PathVariable long productId) {
-        //TODO removeProductFromCart
-    }
-
-    @PutMapping("/{userId}/product/{productId}")
-    public CartDTO updateProductInCart(@PathVariable long userId, @PathVariable long productId, @Param("quantity") int quantity) {
-        //TODO updateProductInCart
-    }
+//    @DeleteMapping("/{cartId}/product/{productId}")
+//    public CartDTO removeProductFromCart(@PathVariable long cartId, @PathVariable long productId) {
+//        //TODO removeProductFromCart
+//    }
+//
+//    @PutMapping("/{userId}/product/{productId}")
+//    public CartDTO updateProductInCart(@PathVariable long userId, @PathVariable long productId, @Param("quantity") int quantity) {
+//        //TODO updateProductInCart
+//    }
 }
