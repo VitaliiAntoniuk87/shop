@@ -29,4 +29,10 @@ public class ProductCartService {
         return productCartRepository.deleteAllByCartIdAndProductId(cartId, productId);
     }
 
+    public int updateProductCartQuantityTotal(ProductCart productCart) {
+        return productCartRepository.updateProductCartQuantityTotal(
+                productCart.getQuantity(), productCart.getTotal(),
+                productCart.getProduct().getId(), productCart.getCart().getId());
+    }
+
 }

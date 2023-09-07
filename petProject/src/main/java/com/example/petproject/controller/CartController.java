@@ -37,8 +37,7 @@ public class CartController {
 
     @PostMapping("/{cartId}/product/{productId}")
     public CartDTO addProductToCart(@PathVariable long cartId, @PathVariable long productId, @Param("quantity") int quantity) {
-        cartService.addProductToCart(cartId, productId, quantity);
-        return cartService.getCartByIdAndStatus(cartId);
+        return cartService.addProductToCart(cartId, productId, quantity);
     }
 
     @DeleteMapping("/product/{productId}")
@@ -49,6 +48,7 @@ public class CartController {
 
     @PutMapping("/{cartId}/product/{productId}")
     public CartDTO updateProductInCart(@PathVariable long cartId, @PathVariable long productId, @Param("quantity") int quantityDifference) {
-
+        cartService.updateProductInCart(cartId, productId, quantityDifference);
+        return cartService.getCartByIdAndStatus(cartId);
     }
 }

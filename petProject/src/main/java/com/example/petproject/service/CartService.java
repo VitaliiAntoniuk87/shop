@@ -70,7 +70,7 @@ public class CartService {
     }
 
     @Transactional
-    public void addProductToCart(long cartId, long productId, int quantity) {
+    public CartDTO addProductToCart(long cartId, long productId, int quantity) {
         Product product = productRepository.findProductById(productId);
         if (product.getQuantity() >= quantity) {
             Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
@@ -84,7 +84,12 @@ public class CartService {
             productCartService.save(productCart);
             cartRepository.updateCartSumWhenStatusNewById(productCart.getTotal(), cartId);
             productService.reduceProductQuantity(productId, quantity);
+            double newSum = cart.getSum() + productCart.getTotal();
+            Cart updatedCart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
+            updatedCart.setSum(newSum);
+            return cartDtoMapper.toCartDTO(updatedCart);
         }
+        return null;
     }
 
     @Transactional
@@ -97,15 +102,21 @@ public class CartService {
         productService.increaseQuantity(productCartDTO);
     }
 
-    public void updateProductQuantityInCart(long cartId, long productId, int quantityDifference) {
+    public void updateProductInCart(long cartId, long productId, int quantityDifference) {
         Product product = productRepository.findProductById(productId);
         if (quantityDifference > 0) {
             if (product.getQuantity() >= quantityDifference) {
                 Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
                 ProductCart productCart = cart.getProducts().stream()
                         .filter(pc -> pc.getProduct().getId() == productId).findFirst().get();
+                double oldTotal = productCart.getTotal();
                 productCart.setQuantity(productCart.getQuantity() + quantityDifference);
-                productCart.setTotal();
+                productCart.setTotal(MathServices.roundToHundredths(productCart.getQuantity() * productCart.getPrice()));
+                double totalDif = productCart.getTotal() - oldTotal;
+                productCartService.updateProductCartQuantityTotal(productCart);
+                productService.reduceProductQuantity(productId, quantityDifference);
+                cartRepository.updateCartSumWhenStatusNewById(totalDif, cartId);
+
             }
         }
     }
