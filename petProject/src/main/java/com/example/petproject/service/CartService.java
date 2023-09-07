@@ -64,9 +64,10 @@ public class CartService {
     }
 
     @Transactional
-    public int deleteCart(CartDTO cartDTO) {
-        productService.increaseQuantity(cartDTO.getProducts());
-        return cartRepository.deleteById(cartDTO.getId());
+    public int deleteCart(long cartId) {
+        Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
+        productService.increaseProductQuantityWithEntity(cart.getProducts());
+        return cartRepository.deleteById(cartId);
     }
 
     @Transactional
@@ -93,32 +94,43 @@ public class CartService {
     }
 
     @Transactional
-    public void removeProductFromCart(CartDTO cartDTO, long productId) {
-        ProductCartDTO productCartDTO = cartDTO.getProducts().stream()
-                .filter(pc -> pc.getProductId() == productId).findFirst().get();
+    public void removeProductFromCart(long cartId, long productId) {
+        Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
+        ProductCart productCart = cart.getProducts().stream()
+                .filter(pc -> pc.getProduct().getId() == productId).findFirst().get();
 
-        productCartService.deleteAllByCartIdAndProductId(cartDTO.getId(), productId);
-        cartRepository.updateCartSumWhenStatusNewById(-1 * productCartDTO.getTotal(), cartDTO.getId());
-        productService.increaseQuantity(productCartDTO);
+        productCartService.deleteAllByCartIdAndProductId(cartId, productId);
+        cartRepository.updateCartSumWhenStatusNewById(-1 * productCart.getTotal(), cartId);
+        productService.increaseProductQuantityWithEntity(productCart);
     }
 
-    public void updateProductInCart(long cartId, long productId, int quantityDifference) {
+    @Transactional
+    public void updateProductInCart(long cartId, long productId, int quantity) {
         Product product = productRepository.findProductById(productId);
+        Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
+        ProductCart productCart = cart.getProducts().stream()
+                .filter(pc -> pc.getProduct().getId() == productId).findFirst().get();
+        int quantityDifference = quantity - productCart.getQuantity();
         if (quantityDifference > 0) {
             if (product.getQuantity() >= quantityDifference) {
-                Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
-                ProductCart productCart = cart.getProducts().stream()
-                        .filter(pc -> pc.getProduct().getId() == productId).findFirst().get();
-                double oldTotal = productCart.getTotal();
-                productCart.setQuantity(productCart.getQuantity() + quantityDifference);
-                productCart.setTotal(MathServices.roundToHundredths(productCart.getQuantity() * productCart.getPrice()));
-                double totalDif = productCart.getTotal() - oldTotal;
-                productCartService.updateProductCartQuantityTotal(productCart);
-                productService.reduceProductQuantity(productId, quantityDifference);
-                cartRepository.updateCartSumWhenStatusNewById(totalDif, cartId);
+                updateDataAtDB(cartId, quantity, productCart);
+                productService.reduceProductQuantity(productId, quantityDifference); //recheck
 
             }
+        } else {
+            updateDataAtDB(cartId, quantity, productCart);
+            productService.increaseQuantity(productId, quantityDifference);
         }
+    }
+
+    @Transactional
+    public void updateDataAtDB(long cartId, int quantity, ProductCart productCart) {
+        double oldTotal = productCart.getTotal();
+        productCart.setQuantity(quantity);
+        productCart.setTotal(MathServices.roundToHundredths(productCart.getQuantity() * productCart.getPrice()));
+        double totalDif = productCart.getTotal() - oldTotal;
+        productCartService.updateProductCartQuantityTotal(productCart);
+        cartRepository.updateCartSumWhenStatusNewById(totalDif, cartId);
     }
 
 }

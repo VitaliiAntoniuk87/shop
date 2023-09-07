@@ -30,9 +30,9 @@ public class CartController {
         return cartService.saveCart(cartDTO);
     }
 
-    @DeleteMapping
-    public int deleteCart(@RequestBody CartDTO cartDTO) {
-        return cartService.deleteCart(cartDTO);
+    @DeleteMapping("/{cartId}")
+    public int deleteCart(@PathVariable long cartId) {
+        return cartService.deleteCart(cartId);
     }
 
     @PostMapping("/{cartId}/product/{productId}")
@@ -40,15 +40,15 @@ public class CartController {
         return cartService.addProductToCart(cartId, productId, quantity);
     }
 
-    @DeleteMapping("/product/{productId}")
-    public CartDTO removeProductFromCart(@RequestBody CartDTO cartDTO, @PathVariable long productId) {
-        cartService.removeProductFromCart(cartDTO, productId);
-        return cartService.getCartByIdAndStatus(cartDTO.getId());
+    @DeleteMapping("/{cartId}/product/{productId}")
+    public CartDTO removeProductFromCart(@PathVariable long cartId, @PathVariable long productId) {
+        cartService.removeProductFromCart(cartId, productId);
+        return cartService.getCartByIdAndStatus(cartId);
     }
 
     @PutMapping("/{cartId}/product/{productId}")
-    public CartDTO updateProductInCart(@PathVariable long cartId, @PathVariable long productId, @Param("quantity") int quantityDifference) {
-        cartService.updateProductInCart(cartId, productId, quantityDifference);
+    public CartDTO updateProductInCart(@PathVariable long cartId, @PathVariable long productId, @Param("quantity") int quantity) {
+        cartService.updateProductInCart(cartId, productId, quantity);
         return cartService.getCartByIdAndStatus(cartId);
     }
 }

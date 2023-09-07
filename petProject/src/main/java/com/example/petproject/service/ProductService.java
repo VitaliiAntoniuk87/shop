@@ -99,12 +99,20 @@ public class ProductService {
         return productRepository.updateQuantity(product.getProductId(), product.getQuantity());
     }
 
+    public int increaseQuantity(long productId, int quantity) {
+        return productRepository.updateQuantity(productId, quantity);
+    }
+
     public int increaseProductQuantityWithEntity(List<ProductCart> products) {
         int counter = 0;
         for (ProductCart product : products) {
             counter += productRepository.updateQuantity(product.getProduct().getId(), product.getQuantity());
         }
         return counter;
+    }
+
+    public int increaseProductQuantityWithEntity(ProductCart product) {
+        return productRepository.updateQuantity(product.getProduct().getId(), product.getQuantity());
     }
 
 
