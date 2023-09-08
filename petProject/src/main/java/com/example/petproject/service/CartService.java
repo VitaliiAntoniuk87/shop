@@ -5,6 +5,7 @@ import com.example.petproject.entity.Cart;
 import com.example.petproject.entity.CartStatus;
 import com.example.petproject.entity.Product;
 import com.example.petproject.entity.ProductCart;
+import com.example.petproject.exception.ObjectAlreadyExistException;
 import com.example.petproject.mapper.CartDtoMapper;
 import com.example.petproject.mapper.ProductCartDtoMapper;
 import com.example.petproject.repository.CartRepository;
@@ -15,9 +16,9 @@ import lombok.Builder;
 import lombok.Data;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @Data
@@ -34,30 +35,47 @@ public class CartService {
 
     public CartDTO getCartByUserId(long id) {
         Cart cart = cartRepository.findByUserIdAndStatus(id, CartStatus.NEW);
-        return cartDtoMapper.toCartDTO(cart);
+        if (cart != null) {
+            return cartDtoMapper.toCartDTO(cart);
+        } else {
+            throw new NoSuchElementException("Active cart not found by this user id!");
+        }
     }
 
     public CartDTO getCartByIdAndStatus(long id) {
         Cart cart = cartRepository.findCartByIdAndStatus(id, CartStatus.NEW);
-        return cartDtoMapper.toCartDTO(cart);
+        if (cart != null) {
+            return cartDtoMapper.toCartDTO(cart);
+        } else {
+            throw new NoSuchElementException("Active cart not found by this id!");
+        }
     }
 
     @Transactional
     public CartDTO saveCart(CartDTO cartDTO) {
-        if (productService.isProductsPriceAndQuantityCorrect(cartDTO)) {
-            Cart cart = cartDtoMapper.toCartEntity(cartDTO);
-            cart.setCreateDate(LocalDateTime.now());
-            Cart savedCart = cartRepository.save(cart);
+        Cart cartFromDB = cartRepository.findByUserIdAndStatus(cartDTO.getUserId(), CartStatus.NEW);
+        if (cartFromDB == null) {
+            if (productService.isProductsPriceAndQuantityCorrect(cartDTO)) {
+                Cart cart = cartDtoMapper.toCartEntity(cartDTO);
+                cart.setCreateDate(LocalDateTime.now());
+                Cart savedCart = cartRepository.save(cart);
 
-            List<ProductCart> productCart = productCartDtoMapper.toProductCartEntityList(cartDTO.getProducts());
-            productCart.forEach(pc -> pc.setCart(savedCart));
-            productCartService.saveAll(productCart);
+                List<ProductCart> productCart = productCartDtoMapper.toProductCartEntityList(cartDTO.getProducts());
+                productCart.forEach(pc -> pc.setCart(savedCart));
+                productCartService.saveAll(productCart);
 
-            cartDTO.setId(savedCart.getId());
-            cartDTO.setCreateDate(LocalDateTime.now());
-            productService.reduceProductQuantity(cartDTO.getProducts());
+                cartDTO.setId(savedCart.getId());
+                cartDTO.setCreateDate(LocalDateTime.now());
+                productService.reduceProductQuantity(cartDTO.getProducts());
+            }
+            return cartDTO;
+        } else {
+            try {
+                throw new ObjectAlreadyExistException("Cart is Already Exist");
+            } catch (ObjectAlreadyExistException e) {
+                 //TODO handler
+            }
         }
-        return cartDTO;
     }
 
     @Transactional
@@ -92,9 +110,7 @@ public class CartService {
 
     @Transactional
     public void removeProductFromCart(long cartId, long productId) {
-        Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
-        ProductCart productCart = cart.getProducts().stream()
-                .filter(pc -> pc.getProduct().getId() == productId).findFirst().get();
+        ProductCart productCart = getProductCartByCartIdProductId(cartId, productId);
 
         productCartService.deleteAllByCartIdAndProductId(cartId, productId);
         cartRepository.updateCartSumWhenStatusNewById(-1 * productCart.getTotal(), cartId);
@@ -103,31 +119,35 @@ public class CartService {
 
     @Transactional
     public void updateProductInCart(long cartId, long productId, int quantity) {
-        Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
-        ProductCart productCart = cart.getProducts().stream()
-                .filter(pc -> pc.getProduct().getId() == productId).findFirst().get();
+        ProductCart productCart = getProductCartByCartIdProductId(cartId, productId);
         int quantityDifference = quantity - productCart.getQuantity();
         if (quantityDifference > 0) {
             Product product = productRepository.findProductById(productId);
             if (product.getQuantity() >= quantityDifference) {
-                updateCartProductAndProductCartAtDB(cartId, quantity, productCart);
+                updateCartAndProductAndProductCartAtDB(cartId, quantity, productCart);
                 productService.reduceProductQuantity(productId, quantityDifference);
 
             }
         } else {
-            updateCartProductAndProductCartAtDB(cartId, quantity, productCart);
+            updateCartAndProductAndProductCartAtDB(cartId, quantity, productCart);
             productService.increaseQuantity(productId, quantityDifference);
         }
     }
 
+    private ProductCart getProductCartByCartIdProductId(long cartId, long productId) {
+        Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
+        return cart.getProducts().stream()
+                .filter(pc -> pc.getProduct().getId() == productId).findFirst().orElseThrow(() -> new ProductCartNotFoundException("ProductCart not found for Cart ID: " + cartId + " and Product ID: " + productId)); //TODO
+
+    }
+
     @Transactional
-    public void updateCartProductAndProductCartAtDB(long cartId, int quantity, ProductCart productCart) {
+    public void updateCartAndProductAndProductCartAtDB(long cartId, int quantity, ProductCart productCart) {
         double oldTotal = productCart.getTotal();
         productCart.setQuantity(quantity);
         productCart.setTotal(MathServices.roundToHundredths(productCart.getQuantity() * productCart.getPrice()));
-        double totalDif = productCart.getTotal() - oldTotal;
         productCartService.updateProductCartQuantityTotal(productCart);
-        cartRepository.updateCartSumWhenStatusNewById(totalDif, cartId);
+        cartRepository.updateCartSumWhenStatusNewById(productCart.getTotal() - oldTotal, cartId);
     }
 
 }
