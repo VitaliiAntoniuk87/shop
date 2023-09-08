@@ -25,8 +25,10 @@ public class ProductCart {
 
     private int quantity;
 
+    @Column(name = "price", precision = 10, scale = 2)
     private double price;
 
+    @Column(name = "total", precision = 10, scale = 2)
     private double total;
 
     @ManyToOne(cascade = CascadeType.PERSIST)

@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     int deleteByUserIdAndStatus(long id, CartStatus status);
 
-    int deleteById(long cartId);
+    void deleteById(long cartId);
 
 
     @Modifying

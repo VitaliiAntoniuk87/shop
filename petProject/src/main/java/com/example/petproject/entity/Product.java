@@ -23,7 +23,7 @@ public class Product {
 
     private int quantity;
 
-    @Column(name = "current_price")
+    @Column(name = "current_price", precision = 10, scale = 2)
     private double currentPrice;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

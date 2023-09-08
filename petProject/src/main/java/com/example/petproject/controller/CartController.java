@@ -31,8 +31,8 @@ public class CartController {
     }
 
     @DeleteMapping("/{cartId}")
-    public int deleteCart(@PathVariable long cartId) {
-        return cartService.deleteCart(cartId);
+    public void deleteCart(@PathVariable long cartId) {
+        cartService.deleteCart(cartId);
     }
 
     @PostMapping("/{cartId}/product/{productId}")

@@ -1,7 +1,6 @@
 package com.example.petproject.service;
 
 import com.example.petproject.dto.CartDTO;
-import com.example.petproject.dto.ProductCartDTO;
 import com.example.petproject.entity.Cart;
 import com.example.petproject.entity.CartStatus;
 import com.example.petproject.entity.Product;
@@ -15,12 +14,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.IntStream;
 
 @Service
 @Data
@@ -64,10 +61,10 @@ public class CartService {
     }
 
     @Transactional
-    public int deleteCart(long cartId) {
+    public void deleteCart(long cartId) {
         Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
         productService.increaseProductQuantityWithEntity(cart.getProducts());
-        return cartRepository.deleteById(cartId);
+        cartRepository.deleteById(cartId);
     }
 
     @Transactional
@@ -106,25 +103,25 @@ public class CartService {
 
     @Transactional
     public void updateProductInCart(long cartId, long productId, int quantity) {
-        Product product = productRepository.findProductById(productId);
         Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
         ProductCart productCart = cart.getProducts().stream()
                 .filter(pc -> pc.getProduct().getId() == productId).findFirst().get();
         int quantityDifference = quantity - productCart.getQuantity();
         if (quantityDifference > 0) {
+            Product product = productRepository.findProductById(productId);
             if (product.getQuantity() >= quantityDifference) {
-                updateDataAtDB(cartId, quantity, productCart);
-                productService.reduceProductQuantity(productId, quantityDifference); //recheck
+                updateCartProductAndProductCartAtDB(cartId, quantity, productCart);
+                productService.reduceProductQuantity(productId, quantityDifference);
 
             }
         } else {
-            updateDataAtDB(cartId, quantity, productCart);
+            updateCartProductAndProductCartAtDB(cartId, quantity, productCart);
             productService.increaseQuantity(productId, quantityDifference);
         }
     }
 
     @Transactional
-    public void updateDataAtDB(long cartId, int quantity, ProductCart productCart) {
+    public void updateCartProductAndProductCartAtDB(long cartId, int quantity, ProductCart productCart) {
         double oldTotal = productCart.getTotal();
         productCart.setQuantity(quantity);
         productCart.setTotal(MathServices.roundToHundredths(productCart.getQuantity() * productCart.getPrice()));

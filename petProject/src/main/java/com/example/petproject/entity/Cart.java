@@ -30,6 +30,7 @@ public class Cart {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(name = "sum", precision = 10, scale = 2)
     private Double sum;
 
     @OneToMany(mappedBy = "cart", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
