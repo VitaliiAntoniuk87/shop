@@ -36,8 +36,7 @@ public class ProductService {
                 .map(product -> baseDtoMapper.toDTO(product, ProductDTO.class)).toList();
     }
 
-    public boolean isProductsPriceAndQuantityCorrect(CartDTO cartDTO) {
-        List<ProductCartDTO> productCartDTO = cartDTO.getProducts();
+    public boolean isProductsPriceAndQuantityCorrect(List<ProductCartDTO> productCartDTO) {
         List<Long> productIds = productCartDTO.stream().mapToLong(ProductCartDTO::getProductId).boxed().toList();
         List<Product> productsFromDatabase = productRepository.findAllByIdIn(productIds);
 

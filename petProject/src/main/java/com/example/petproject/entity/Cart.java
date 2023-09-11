@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class Cart {
 
     @Enumerated(value = EnumType.STRING)
     private CartStatus status;
+
 
     @Column(name = "create_date")
     private LocalDateTime createDate;

@@ -1,9 +1,6 @@
 package com.example.petproject.controller;
 
 import com.example.petproject.dto.CartDTO;
-import com.example.petproject.entity.Cart;
-import com.example.petproject.entity.CartStatus;
-import com.example.petproject.mapper.CartDtoMapper;
 import com.example.petproject.service.CartService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.repository.query.Param;
@@ -15,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 public class CartController {
 
     private final CartService cartService;
-    private final CartDtoMapper cartDtoMapper;
 
     @GetMapping("/{userId}")
     public CartDTO getCartByUserId(@PathVariable long userId) {
@@ -24,9 +20,6 @@ public class CartController {
 
     @PostMapping
     public CartDTO saveCart(@RequestBody CartDTO cartDTO) {
-        System.out.println(cartDTO); //delete after tests
-        Cart cart = cartDtoMapper.toCartEntity(cartDTO); //delete after tests
-        System.out.println(cart); //delete after tests
         return cartService.saveCart(cartDTO);
     }
 
@@ -43,12 +36,12 @@ public class CartController {
     @DeleteMapping("/{cartId}/product/{productId}")
     public CartDTO removeProductFromCart(@PathVariable long cartId, @PathVariable long productId) {
         cartService.removeProductFromCart(cartId, productId);
-        return cartService.getCartByIdAndStatus(cartId);
+        return cartService.getCartById(cartId);
     }
 
     @PutMapping("/{cartId}/product/{productId}")
     public CartDTO updateProductInCart(@PathVariable long cartId, @PathVariable long productId, @Param("quantity") int quantity) {
         cartService.updateProductInCart(cartId, productId, quantity);
-        return cartService.getCartByIdAndStatus(cartId);
+        return cartService.getCartById(cartId);
     }
 }

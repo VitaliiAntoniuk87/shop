@@ -1,11 +1,15 @@
 package com.example.petproject.service;
 
 import com.example.petproject.dto.CartDTO;
+import com.example.petproject.dto.ProductCartDTO;
 import com.example.petproject.entity.Cart;
 import com.example.petproject.entity.CartStatus;
 import com.example.petproject.entity.Product;
 import com.example.petproject.entity.ProductCart;
+import com.example.petproject.exception.IncorrectPriceQuantityException;
 import com.example.petproject.exception.ObjectAlreadyExistException;
+import com.example.petproject.exception.ObjectFieldWrongValueException;
+import com.example.petproject.exception.ObjectNotFoundException;
 import com.example.petproject.mapper.CartDtoMapper;
 import com.example.petproject.mapper.ProductCartDtoMapper;
 import com.example.petproject.repository.CartRepository;
@@ -17,6 +21,7 @@ import lombok.Data;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -38,44 +43,53 @@ public class CartService {
         if (cart != null) {
             return cartDtoMapper.toCartDTO(cart);
         } else {
-            throw new NoSuchElementException("Active cart not found by this user id!");
+            throw new ObjectNotFoundException("Active cart not found by this User!");
         }
     }
 
-    public CartDTO getCartByIdAndStatus(long id) {
+    public CartDTO getCartById(long id) {
         Cart cart = cartRepository.findCartByIdAndStatus(id, CartStatus.NEW);
         if (cart != null) {
             return cartDtoMapper.toCartDTO(cart);
         } else {
-            throw new NoSuchElementException("Active cart not found by this id!");
+            throw new ObjectNotFoundException("Active cart not found");
         }
     }
 
     @Transactional
     public CartDTO saveCart(CartDTO cartDTO) {
-        Cart cartFromDB = cartRepository.findByUserIdAndStatus(cartDTO.getUserId(), CartStatus.NEW);
-        if (cartFromDB == null) {
-            if (productService.isProductsPriceAndQuantityCorrect(cartDTO)) {
-                Cart cart = cartDtoMapper.toCartEntity(cartDTO);
-                cart.setCreateDate(LocalDateTime.now());
-                Cart savedCart = cartRepository.save(cart);
+        if (cartDTO.getUserId() > 0 && cartDTO.getProducts().size() > 0) {
+            Cart cartFromDB = cartRepository.findByUserIdAndStatus(cartDTO.getUserId(), CartStatus.NEW);
+            List<ProductCartDTO> productCartDTOS = cartDTO.getProducts();
+            if (productService.isProductsPriceAndQuantityCorrect(productCartDTOS)) {
+                productCartDTOS.forEach(p -> p.setTotal(p.getPrice() * p.getQuantity()));
+                if (cartFromDB == null) {
+                    Cart cart = cartDtoMapper.toCartEntity(cartDTO);
+                    cart.setSum(productCartDTOS.stream().mapToDouble(ProductCartDTO::getTotal).sum());
+                    cart.setCreateDate(LocalDateTime.now());
+                    cartRepository.save(cart);
 
-                List<ProductCart> productCart = productCartDtoMapper.toProductCartEntityList(cartDTO.getProducts());
-                productCart.forEach(pc -> pc.setCart(savedCart));
-                productCartService.saveAll(productCart);
+                    List<ProductCart> productCart = productCartDtoMapper.toProductCartEntityList(productCartDTOS);
+                    productCart.forEach(pc -> pc.setCart(cart));
+                    productCartService.saveAll(productCart);
 
-                cartDTO.setId(savedCart.getId());
-                cartDTO.setCreateDate(LocalDateTime.now());
-                productService.reduceProductQuantity(cartDTO.getProducts());
+                    productService.reduceProductQuantity(productCartDTOS);
+                    cart.setProducts(productCart);
+                    return cartDtoMapper.toCartDTO(cart);
+                } else {
+                    try {
+                        throw new ObjectAlreadyExistException("The Cart for this User is Active");
+                    } catch (ObjectAlreadyExistException e) {
+                        updateProductsInCartFilter(cartFromDB, productCartDTOS);
+                    }
+                }
+            } else {
+                throw new IncorrectPriceQuantityException("Product price or quantity is incorrect");
             }
-            return cartDTO;
         } else {
-            try {
-                throw new ObjectAlreadyExistException("Cart is Already Exist");
-            } catch (ObjectAlreadyExistException e) {
-                 //TODO handler
-            }
+            throw new ObjectFieldWrongValueException("UserId or productList are empty");
         }
+        return null;
     }
 
     @Transactional
@@ -137,7 +151,8 @@ public class CartService {
     private ProductCart getProductCartByCartIdProductId(long cartId, long productId) {
         Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
         return cart.getProducts().stream()
-                .filter(pc -> pc.getProduct().getId() == productId).findFirst().orElseThrow(() -> new ProductCartNotFoundException("ProductCart not found for Cart ID: " + cartId + " and Product ID: " + productId)); //TODO
+                .filter(pc -> pc.getProduct().getId() == productId).findFirst()
+                .orElseThrow(() -> new ObjectNotFoundException("ProductCart not found for Product ID: " + productId));
 
     }
 
@@ -148,6 +163,41 @@ public class CartService {
         productCart.setTotal(MathServices.roundToHundredths(productCart.getQuantity() * productCart.getPrice()));
         productCartService.updateProductCartQuantityTotal(productCart);
         cartRepository.updateCartSumWhenStatusNewById(productCart.getTotal() - oldTotal, cartId);
+    }
+
+    public void updateProductsInCartFilter(Cart cart, List<ProductCartDTO> productsToAdd) {
+        List<ProductCartDTO> newProducts = new ArrayList<>();
+        List<ProductCartDTO> oldProducts = new ArrayList<>();
+
+        for (ProductCartDTO productToAdd : productsToAdd) {
+            boolean found = cart.getProducts().stream()
+                    .anyMatch(pc -> pc.getProduct().getId() == productToAdd.getProductId());
+
+            (found ? oldProducts : newProducts).add(productToAdd);
+        }
+
+        addProductsToCart(cart, newProducts);
+        updateProductsInCart(cart, oldProducts);
+
+    }
+
+    @Transactional
+    public void addProductsToCart(Cart cart, List<ProductCartDTO> productCartDTOS) {
+        List<ProductCart> productCarts = productCartDtoMapper.toProductCartEntityList(productCartDTOS);
+        productCarts.forEach(pc -> pc.setCart(cart));
+        productCartService.saveAll(productCarts);
+        productService.reduceProductQuantity(productCartDTOS);
+
+        double newSum = productCartDTOS.stream().mapToDouble(ProductCartDTO::getTotal).sum();
+        cartRepository.updateCartSumWhenStatusNewById(newSum, cart.getId());
+    }
+
+    @Transactional
+    public void updateProductsInCart(Cart cart, List<ProductCartDTO> productCartDTOS) {
+        double newSum = productCartDTOS.stream().mapToDouble(ProductCartDTO::getTotal).sum();
+        cartRepository.updateCartSumWhenStatusNewById(newSum, cart.getId());
+        productService.reduceProductQuantity(productCartDTOS);
+        productCartService.updateProductCartQuantityTotalByDifference(cart.getId(), productCartDTOS);
     }
 
 }

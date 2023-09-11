@@ -52,5 +52,14 @@ public interface ProductCartRepository extends JpaRepository<ProductCart, Long> 
             @Param("newPrice") double newPrice, @Param("newTotal") double newTotal,
             @Param("productId") long productId, @Param("cartId") long cartId);
 
+    @Modifying
+    @Query("""
+            UPDATE ProductCart pc SET pc.quantity = pc.quantity + :newQuantityDiff, pc.total = pc.total + :newTotalDiff
+            WHERE pc.product.id = :productId AND pc.cart.id = :cartId
+            """)
+    int updateProductCartQuantityTotalByDifference(
+            @Param("newQuantityDiff") int newQuantityDiff, @Param("newTotalDiff") double newTotalDiff,
+            @Param("productId") long productId, @Param("cartId") long cartId);
+
 
 }

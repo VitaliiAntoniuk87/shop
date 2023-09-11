@@ -35,4 +35,14 @@ public class ProductCartService {
                 productCart.getProduct().getId(), productCart.getCart().getId());
     }
 
+    public int updateProductCartQuantityTotalByDifference(long cartId, List<ProductCartDTO> productCartDTODiff) {
+        int counter = 0;
+        for (ProductCartDTO productCartDTO : productCartDTODiff) {
+            counter += productCartRepository.updateProductCartQuantityTotalByDifference(
+                    productCartDTO.getQuantity(), productCartDTO.getTotal(), productCartDTO.getProductId(), cartId
+            );
+        }
+        return counter;
+    }
+
 }
