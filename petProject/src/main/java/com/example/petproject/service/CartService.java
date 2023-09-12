@@ -58,7 +58,7 @@ public class CartService {
 
     @Transactional
     public CartDTO saveCart(CartDTO cartDTO) {
-        if (cartDTO.getUserId() > 0 && cartDTO.getProducts().size() > 0) {
+        if (cartDTO.getUserId() > 0 && !cartDTO.getProducts().isEmpty()) {
             Cart cartFromDB = cartRepository.findByUserIdAndStatus(cartDTO.getUserId(), CartStatus.NEW);
             List<ProductCartDTO> productCartDTOS = cartDTO.getProducts();
             if (productService.isProductsPriceAndQuantityCorrect(productCartDTOS)) {
