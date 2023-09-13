@@ -43,7 +43,7 @@ public class CartService {
         if (cart != null) {
             return cartDtoMapper.toCartDTO(cart);
         } else {
-            throw new ObjectNotFoundException("Active cart not found by this User!");
+            throw new ObjectNotFoundException("Active cart not found for this User!");
         }
     }
 
@@ -77,11 +77,8 @@ public class CartService {
                     cart.setProducts(productCart);
                     return cartDtoMapper.toCartDTO(cart);
                 } else {
-                    try {
-                        throw new ObjectAlreadyExistException("The Cart for this User is Active");
-                    } catch (ObjectAlreadyExistException e) {
-                        updateProductsInCartFilter(cartFromDB, productCartDTOS);
-                    }
+                    updateProductsInCartFilter(cartFromDB, productCartDTOS);
+                    return getCartById(cartFromDB.getId());
                 }
             } else {
                 throw new IncorrectPriceQuantityException("Product price or quantity is incorrect");
@@ -89,7 +86,7 @@ public class CartService {
         } else {
             throw new ObjectFieldWrongValueException("UserId or productList are empty");
         }
-        return null;
+//        return null;
     }
 
     @Transactional
