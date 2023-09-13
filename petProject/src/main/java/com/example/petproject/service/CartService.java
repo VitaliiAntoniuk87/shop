@@ -121,27 +121,44 @@ public class CartService {
 
     @Transactional
     public void removeProductFromCart(long cartId, long productId) {
-        ProductCart productCart = getProductCartByCartIdProductId(cartId, productId);
+        Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
+        ProductCart productCart = cart.getProducts().stream()
+                .filter(pc -> pc.getProduct().getId() == productId).findFirst().orElse(null);
+        if (productCart != null) {
+            if (cart.getProducts().size() > 1) {
+                productCartService.deleteAllByCartIdAndProductId(cartId, productId);
+                cartRepository.updateCartSumWhenStatusNewById(-1 * productCart.getTotal(), cartId);
+                productService.increaseProductQuantityWithEntity(productCart);
+            } else {
+                deleteCart(cartId);
+            }
+        } else {
+            throw new ObjectNotFoundException("Product with id " + productId + " not found at cart " + cartId);
+        }
 
-        productCartService.deleteAllByCartIdAndProductId(cartId, productId);
-        cartRepository.updateCartSumWhenStatusNewById(-1 * productCart.getTotal(), cartId);
-        productService.increaseProductQuantityWithEntity(productCart);
+
     }
 
     @Transactional
     public void updateProductInCart(long cartId, long productId, int quantity) {
-        ProductCart productCart = getProductCartByCartIdProductId(cartId, productId);
-        int quantityDifference = quantity - productCart.getQuantity();
-        if (quantityDifference > 0) {
-            Product product = productRepository.findProductById(productId);
-            if (product.getQuantity() >= quantityDifference) {
-                updateCartAndProductAndProductCartAtDB(cartId, quantity, productCart);
-                productService.reduceProductQuantity(productId, quantityDifference);
+        if (quantity > 0) {
+            ProductCart productCart = getProductCartByCartIdProductId(cartId, productId);
+            int quantityDifference = quantity - productCart.getQuantity();
+            if (quantityDifference > 0) {
+                Product product = productRepository.findProductById(productId);
+                if (product.getQuantity() >= quantityDifference) {
+                    updateCartAndProductAndProductCartAtDB(cartId, quantity, productCart);
+                    productService.reduceProductQuantity(productId, quantityDifference);
 
+                }
+            } else {
+                updateCartAndProductAndProductCartAtDB(cartId, quantity, productCart);
+                productService.increaseQuantity(productId, quantityDifference);
             }
+        } else if (quantity == 0) {
+            removeProductFromCart(cartId, productId);
         } else {
-            updateCartAndProductAndProductCartAtDB(cartId, quantity, productCart);
-            productService.increaseQuantity(productId, quantityDifference);
+            throw new ObjectFieldWrongValueException("parameter quantity has wrong value");
         }
     }
 
