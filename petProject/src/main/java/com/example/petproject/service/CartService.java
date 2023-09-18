@@ -7,7 +7,6 @@ import com.example.petproject.entity.CartStatus;
 import com.example.petproject.entity.Product;
 import com.example.petproject.entity.ProductCart;
 import com.example.petproject.exception.IncorrectPriceQuantityException;
-import com.example.petproject.exception.ObjectAlreadyExistException;
 import com.example.petproject.exception.ObjectFieldWrongValueException;
 import com.example.petproject.exception.ObjectNotFoundException;
 import com.example.petproject.mapper.CartDtoMapper;
@@ -18,17 +17,18 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @Data
 @AllArgsConstructor
 @Builder
+@Log4j2
 public class CartService {
 
     private final CartDtoMapper cartDtoMapper;
@@ -77,6 +77,8 @@ public class CartService {
                     cart.setProducts(productCart);
                     return cartDtoMapper.toCartDTO(cart);
                 } else {
+                    log.info("Active cart for userId " + cartDTO.getUserId() + " is already exist." +
+                            "Invoke method  updateProductsInCartFilter ");
                     updateProductsInCartFilter(cartFromDB, productCartDTOS);
                     return getCartById(cartFromDB.getId());
                 }
