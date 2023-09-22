@@ -1,6 +1,5 @@
 package com.example.petproject.service;
 
-import com.example.petproject.dto.CartDTO;
 import com.example.petproject.dto.ProductCartDTO;
 import com.example.petproject.dto.ProductDTO;
 import com.example.petproject.entity.Product;
@@ -64,7 +63,7 @@ public class ProductService {
 
     }
 
-    public int reduceProductQuantity(List<ProductCartDTO> products) {
+    public int decrementProductQuantity(List<ProductCartDTO> products) {
         int counter = 0;
         for (ProductCartDTO product : products) {
             counter += productRepository.updateQuantity(product.getProductId(), -1 * product.getQuantity());
@@ -72,12 +71,12 @@ public class ProductService {
         return counter;
     }
 
-    public int reduceProductQuantity(long productId, int quantity) {
+    public int decrementProductQuantity(long productId, int quantity) {
         return productRepository.updateQuantity(productId, -1 * quantity);
     }
 
 
-    public int reduceProductQuantityWithEntity(List<ProductCart> products) {
+    public int decrementProductQuantityWithEntity(List<ProductCart> products) {
         int counter = 0;
         for (ProductCart product : products) {
             counter += productRepository.updateQuantity(product.getProduct().getId(), -1 * product.getQuantity());
@@ -86,7 +85,7 @@ public class ProductService {
     }
 
 
-    public int increaseQuantity(List<ProductCartDTO> products) {
+    public int incrementQuantity(List<ProductCartDTO> products) {
         int counter = 0;
         for (ProductCartDTO product : products) {
             counter += productRepository.updateQuantity(product.getProductId(), product.getQuantity());
@@ -94,15 +93,15 @@ public class ProductService {
         return counter;
     }
 
-    public int increaseQuantity(ProductCartDTO product) {
+    public int incrementQuantity(ProductCartDTO product) {
         return productRepository.updateQuantity(product.getProductId(), product.getQuantity());
     }
 
-    public int increaseQuantity(long productId, int quantity) {
+    public int incrementQuantity(long productId, int quantity) {
         return productRepository.updateQuantity(productId, quantity);
     }
 
-    public int increaseProductQuantityWithEntity(List<ProductCart> products) {
+    public int incrementProductQuantityWithEntity(List<ProductCart> products) {
         int counter = 0;
         for (ProductCart product : products) {
             counter += productRepository.updateQuantity(product.getProduct().getId(), product.getQuantity());
@@ -110,7 +109,7 @@ public class ProductService {
         return counter;
     }
 
-    public int increaseProductQuantityWithEntity(ProductCart product) {
+    public int incrementProductQuantityWithEntity(ProductCart product) {
         return productRepository.updateQuantity(product.getProduct().getId(), product.getQuantity());
     }
 

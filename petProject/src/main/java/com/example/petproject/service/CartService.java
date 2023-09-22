@@ -73,11 +73,11 @@ public class CartService {
                     productCart.forEach(pc -> pc.setCart(cart));
                     productCartService.saveAll(productCart);
 
-                    productService.reduceProductQuantity(productCartDTOS);
+                    productService.decrementProductQuantity(productCartDTOS);
                     cart.setProducts(productCart);
                     return cartDtoMapper.toCartDTO(cart);
                 } else {
-                    log.info("Active cart for userId " + cartDTO.getUserId() + " is already exist." +
+                    log.warn("Active cart for userId " + cartDTO.getUserId() + " is already exist." +
                             "Invoke method  updateProductsInCartFilter ");
                     updateProductsInCartFilter(cartFromDB, productCartDTOS);
                     return getCartById(cartFromDB.getId());
@@ -94,7 +94,7 @@ public class CartService {
     @Transactional
     public void deleteCart(long cartId) {
         Cart cart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
-        productService.increaseProductQuantityWithEntity(cart.getProducts());
+        productService.incrementProductQuantityWithEntity(cart.getProducts());
         cartRepository.deleteById(cartId);
     }
 
@@ -112,7 +112,7 @@ public class CartService {
                     .build();
             productCartService.save(productCart);
             cartRepository.updateCartSumWhenStatusNewById(productCart.getTotal(), cartId);
-            productService.reduceProductQuantity(productId, quantity);
+            productService.decrementProductQuantity(productId, quantity);
             double newSum = cart.getSum() + productCart.getTotal();
             Cart updatedCart = cartRepository.findCartByIdAndStatus(cartId, CartStatus.NEW);
             updatedCart.setSum(newSum);
@@ -130,7 +130,7 @@ public class CartService {
             if (cart.getProducts().size() > 1) {
                 productCartService.deleteAllByCartIdAndProductId(cartId, productId);
                 cartRepository.updateCartSumWhenStatusNewById(-1 * productCart.getTotal(), cartId);
-                productService.increaseProductQuantityWithEntity(productCart);
+                productService.incrementProductQuantityWithEntity(productCart);
             } else {
                 deleteCart(cartId);
             }
@@ -150,12 +150,12 @@ public class CartService {
                 Product product = productRepository.findProductById(productId);
                 if (product.getQuantity() >= quantityDifference) {
                     updateCartAndProductAndProductCartAtDB(cartId, quantity, productCart);
-                    productService.reduceProductQuantity(productId, quantityDifference);
+                    productService.decrementProductQuantity(productId, quantityDifference);
 
                 }
             } else {
                 updateCartAndProductAndProductCartAtDB(cartId, quantity, productCart);
-                productService.increaseQuantity(productId, quantityDifference);
+                productService.incrementQuantity(productId, quantityDifference);
             }
         } else if (quantity == 0) {
             removeProductFromCart(cartId, productId);
@@ -192,8 +192,12 @@ public class CartService {
             (found ? oldProducts : newProducts).add(productToAdd);
         }
 
-        addProductsToCart(cart, newProducts);
-        updateProductsInCart(cart, oldProducts);
+        if (!newProducts.isEmpty()) {
+            addProductsToCart(cart, newProducts);
+        }
+        if (!oldProducts.isEmpty()) {
+            updateProductsInCart(cart, oldProducts);
+        }
 
     }
 
@@ -202,7 +206,7 @@ public class CartService {
         List<ProductCart> productCarts = productCartDtoMapper.toProductCartEntityList(productCartDTOS);
         productCarts.forEach(pc -> pc.setCart(cart));
         productCartService.saveAll(productCarts);
-        productService.reduceProductQuantity(productCartDTOS);
+        productService.decrementProductQuantity(productCartDTOS);
 
         double newSum = productCartDTOS.stream().mapToDouble(ProductCartDTO::getTotal).sum();
         cartRepository.updateCartSumWhenStatusNewById(newSum, cart.getId());
@@ -212,8 +216,12 @@ public class CartService {
     public void updateProductsInCart(Cart cart, List<ProductCartDTO> productCartDTOS) {
         double newSum = productCartDTOS.stream().mapToDouble(ProductCartDTO::getTotal).sum();
         cartRepository.updateCartSumWhenStatusNewById(newSum, cart.getId());
-        productService.reduceProductQuantity(productCartDTOS);
+        productService.decrementProductQuantity(productCartDTOS);
         productCartService.updateProductCartQuantityTotalByDifference(cart.getId(), productCartDTOS);
+    }
+
+    public void cartCancellation() {
+
     }
 
 }
