@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Data
@@ -220,8 +221,19 @@ public class CartService {
         productCartService.updateProductCartQuantityTotalByDifference(cart.getId(), productCartDTOS);
     }
 
-    public void cartCancellation() {
+    public void cartCancellation(int timeLimitMinutes) {
 
+    }
+
+    private List<ProductCart> getSumQuantityGroupedByProductFromCartList(List<Cart> carts) {
+        return carts.stream().flatMap(c -> c.getProducts().stream())
+                .collect(Collectors.groupingBy(
+                        ProductCart::getProduct,
+                        Collectors.summingInt(ProductCart::getQuantity)
+                ))
+                .entrySet().stream()
+                .map(e -> ProductCart.builder().product(e.getKey()).quantity(e.getValue()).build())
+                .toList();
     }
 
 }
