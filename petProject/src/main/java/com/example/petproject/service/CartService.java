@@ -20,6 +20,7 @@ import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -221,7 +222,13 @@ public class CartService {
         productCartService.updateProductCartQuantityTotalByDifference(cart.getId(), productCartDTOS);
     }
 
-    public void cartCancellation(int timeLimitMinutes) {
+    public void cartAutoCancellation(long timeLimitMinutes) {
+        LocalDateTime newDateLimit = LocalDateTime.now().minusMinutes(timeLimitMinutes);
+        List<Cart> carts = cartRepository.findAllByCreateDateBeforeAndStatus(newDateLimit, CartStatus.NEW);
+        List<ProductCart> groupedByProductCarts = getSumQuantityGroupedByProductFromCartList(carts);
+
+        cartRepository.updateCartStatusToCancelledByCreateDate(Timestamp.valueOf(newDateLimit));
+        productService.incrementProductQuantityWithEntity(groupedByProductCarts);
 
     }
 

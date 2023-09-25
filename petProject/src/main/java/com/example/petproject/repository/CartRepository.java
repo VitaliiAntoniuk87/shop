@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -20,6 +21,8 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     @NonNull <S extends Cart> S save(@NonNull S entity);
 
     List<Cart> findAllByUserIdAndStatus(long id, CartStatus status);
+
+    List<Cart> findAllByCreateDateBeforeAndStatus(LocalDateTime createDate, CartStatus status);
 
     Cart findByUserIdAndStatus(long id, CartStatus status);
 
