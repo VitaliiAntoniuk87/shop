@@ -45,6 +45,7 @@ public class CartService {
         if (cart != null) {
             return cartDtoMapper.toCartDTO(cart);
         } else {
+            log.warn("Active cart is not found for userId = " + id);
             throw new ObjectNotFoundException("Active cart not found for this User!");
         }
     }
@@ -54,6 +55,7 @@ public class CartService {
         if (cart != null) {
             return cartDtoMapper.toCartDTO(cart);
         } else {
+            log.warn("Active cart is not found for this cartId = " + id);
             throw new ObjectNotFoundException("Active cart not found");
         }
     }
@@ -67,20 +69,27 @@ public class CartService {
                 productCartDTOS.forEach(p -> p.setTotal(p.getPrice() * p.getQuantity()));
                 if (cartFromDB == null) {
                     Cart cart = cartDtoMapper.toCartEntity(cartDTO);
+                    log.info("cartDTO was transferred to cart (entity)");
                     cart.setSum(productCartDTOS.stream().mapToDouble(ProductCartDTO::getTotal).sum());
                     cart.setCreateDate(LocalDateTime.now());
                     cartRepository.save(cart);
+                    log.info("The cart was saved with id = " + cart.getId());
 
                     List<ProductCart> productCart = productCartDtoMapper.toProductCartEntityList(productCartDTOS);
+                    log.info("ProductCartDTOS was transferred to entity");
                     productCart.forEach(pc -> pc.setCart(cart));
                     productCartService.saveAll(productCart);
+                    log.info("productCarts was saved with id's: " + productCart.stream()
+                            .map(ProductCart::getId)
+                            .toList());
 
                     productService.decrementProductQuantity(productCartDTOS);
+                    log.info("Products quantity was decremented");
                     cart.setProducts(productCart);
                     return cartDtoMapper.toCartDTO(cart);
                 } else {
                     log.warn("Active cart for userId " + cartDTO.getUserId() + " is already exist." +
-                            "Invoke method  updateProductsInCartFilter ");
+                            "Invoke method  updateProductsInCartFilter");
                     updateProductsInCartFilter(cartFromDB, productCartDTOS);
                     return getCartById(cartFromDB.getId());
                 }
