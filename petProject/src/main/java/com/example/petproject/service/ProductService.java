@@ -9,6 +9,7 @@ import com.example.petproject.repository.ProductRepository;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
 @Data
 @Builder
 @AllArgsConstructor
+@Log4j2
 public class ProductService {
 
     private final ProductRepository productRepository;
@@ -67,6 +69,10 @@ public class ProductService {
         int counter = 0;
         for (ProductCartDTO product : products) {
             counter += productRepository.updateQuantity(product.getProductId(), -1 * product.getQuantity());
+            log.info("Product with id = " + product.getProductId() + " has been decremented by " + product.getQuantity() + " units");
+        }
+        if (products.size() != counter) {
+            log.error("Some product's quantity wasn't updated");
         }
         return counter;
     }

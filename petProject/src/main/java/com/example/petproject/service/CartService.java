@@ -84,11 +84,10 @@ public class CartService {
                             .toList());
 
                     productService.decrementProductQuantity(productCartDTOS);
-                    log.info("Products quantity was decremented");
                     cart.setProducts(productCart);
                     return cartDtoMapper.toCartDTO(cart);
                 } else {
-                    log.warn("Active cart for userId " + cartDTO.getUserId() + " is already exist." +
+                    log.warn("Active cart for userId " + cartDTO.getUserId() + " is already exist. " +
                             "Invoke method  updateProductsInCartFilter");
                     updateProductsInCartFilter(cartFromDB, productCartDTOS);
                     return getCartById(cartFromDB.getId());
