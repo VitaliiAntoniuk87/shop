@@ -69,14 +69,12 @@ public class CartService {
                 productCartDTOS.forEach(p -> p.setTotal(p.getPrice() * p.getQuantity()));
                 if (cartFromDB == null) {
                     Cart cart = cartDtoMapper.toCartEntity(cartDTO);
-                    log.info("cartDTO was transferred to cart (entity)");
                     cart.setSum(productCartDTOS.stream().mapToDouble(ProductCartDTO::getTotal).sum());
                     cart.setCreateDate(LocalDateTime.now());
                     cartRepository.save(cart);
                     log.info("The cart was saved with id = " + cart.getId());
 
                     List<ProductCart> productCart = productCartDtoMapper.toProductCartEntityList(productCartDTOS);
-                    log.info("ProductCartDTOS was transferred to entity");
                     productCart.forEach(pc -> pc.setCart(cart));
                     productCartService.saveAll(productCart);
                     log.info("productCarts was saved with id's: " + productCart.stream()
@@ -87,15 +85,17 @@ public class CartService {
                     cart.setProducts(productCart);
                     return cartDtoMapper.toCartDTO(cart);
                 } else {
-                    log.warn("Active cart for userId " + cartDTO.getUserId() + " is already exist. " +
-                            "Invoke method  updateProductsInCartFilter");
+                    log.warn("Active cart for userId = " + cartDTO.getUserId() + " is already exist");
+                    log.info("Invoke method  updateProductsInCartFilter");
                     updateProductsInCartFilter(cartFromDB, productCartDTOS);
                     return getCartById(cartFromDB.getId());
                 }
             } else {
+                log.error("The validation was failed");
                 throw new IncorrectPriceQuantityException("Product price or quantity is incorrect");
             }
         } else {
+            log.error("User Id has wrong value or productCart is empty");
             throw new ObjectFieldWrongValueException("UserId or productList are empty");
         }
 //        return null;
@@ -203,44 +203,51 @@ public class CartService {
         }
 
         if (!newProducts.isEmpty()) {
-            addProductsToCart(cart, newProducts);
+            log.info("Collection 'New Products' has " + newProducts.size() + " product(-s)");
+            addNewProductsToCart(cart, newProducts);
         }
         if (!oldProducts.isEmpty()) {
+            log.info("Collection 'Old Products' has " + oldProducts.size() + " product(-s)");
             updateProductsInCart(cart, oldProducts);
         }
 
     }
 
     @Transactional
-    public void addProductsToCart(Cart cart, List<ProductCartDTO> productCartDTOS) {
+    public void addNewProductsToCart(Cart cart, List<ProductCartDTO> productCartDTOS) {
         List<ProductCart> productCarts = productCartDtoMapper.toProductCartEntityList(productCartDTOS);
         productCarts.forEach(pc -> pc.setCart(cart));
         productCartService.saveAll(productCarts);
+        log.info("ProductCarts were saved");
         productService.decrementProductQuantity(productCartDTOS);
 
         double newSum = productCartDTOS.stream().mapToDouble(ProductCartDTO::getTotal).sum();
         cartRepository.updateCartSumWhenStatusNewById(newSum, cart.getId());
+        log.info("The sum in Cart with id = " + cart.getId() + " was updated");
     }
 
     @Transactional
     public void updateProductsInCart(Cart cart, List<ProductCartDTO> productCartDTOS) {
         double newSum = productCartDTOS.stream().mapToDouble(ProductCartDTO::getTotal).sum();
         cartRepository.updateCartSumWhenStatusNewById(newSum, cart.getId());
+        log.info("The sum in Cart with id = " + cart.getId() + " was updated");
         productService.decrementProductQuantity(productCartDTOS);
         productCartService.updateProductCartQuantityTotalByDifference(cart.getId(), productCartDTOS);
+        log.info("ProductCarts in Cart with id = " + cart.getId() + " were updated");
     }
 
+    @Transactional
     public void cartAutoCancellation(long timeLimitMinutes) {
         LocalDateTime newDateLimit = LocalDateTime.now().minusMinutes(timeLimitMinutes);
         List<Cart> carts = cartRepository.findAllByCreateDateBeforeAndStatus(newDateLimit, CartStatus.NEW);
-        List<ProductCart> groupedByProductCarts = getSumQuantityGroupedByProductFromCartList(carts);
+        List<ProductCart> groupedByProductCarts = getQuantitySumGroupedByProductFromCartList(carts);
 
         cartRepository.updateCartStatusToCancelledByCreateDate(Timestamp.valueOf(newDateLimit));
+        log.info("All Carts created earlier than " + newDateLimit + " have become inactive");
         productService.incrementProductQuantityWithEntity(groupedByProductCarts);
-
     }
 
-    private List<ProductCart> getSumQuantityGroupedByProductFromCartList(List<Cart> carts) {
+    private List<ProductCart> getQuantitySumGroupedByProductFromCartList(List<Cart> carts) {
         return carts.stream().flatMap(c -> c.getProducts().stream())
                 .collect(Collectors.groupingBy(
                         ProductCart::getProduct,

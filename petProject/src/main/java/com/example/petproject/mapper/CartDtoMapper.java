@@ -6,12 +6,14 @@ import com.example.petproject.entity.Cart;
 import com.example.petproject.entity.CartStatus;
 import com.example.petproject.entity.User;
 import com.example.petproject.service.MathServices;
+import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
+@Log4j2
 public class CartDtoMapper extends BaseDtoMapper {
 
     private final ProductCartDtoMapper productCartDtoMapper;
@@ -25,6 +27,7 @@ public class CartDtoMapper extends BaseDtoMapper {
         CartDTO cartDTO = toDTO(cart, CartDTO.class);
         cartDTO.setProducts(productCartDtoMapper.toProductCartDTOList(cart.getProducts()));
         cartDTO.setUserId(cart.getUser().getId());
+        log.info("Entity Cart was transferred to DTO Cart");
         return cartDTO;
     }
 
@@ -34,6 +37,7 @@ public class CartDtoMapper extends BaseDtoMapper {
         cart.setStatus(CartStatus.NEW);
         cart.setSum(MathServices.roundToHundredths(cartDTO.getProducts().stream().mapToDouble(ProductCartDTO::getTotal).sum()));
         cart.setProducts(productCartDtoMapper.toProductCartEntityList(cartDTO.getProducts()));
+        log.info("DTO Cart was transferred to Entity Cart");
         return cart;
     }
 

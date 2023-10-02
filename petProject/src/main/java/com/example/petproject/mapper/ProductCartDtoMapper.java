@@ -4,6 +4,7 @@ import com.example.petproject.dto.ProductCartDTO;
 import com.example.petproject.entity.Cart;
 import com.example.petproject.entity.Product;
 import com.example.petproject.entity.ProductCart;
+import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Log4j2
 public class ProductCartDtoMapper extends BaseDtoMapper {
 
     public ProductCartDtoMapper(ModelMapper modelMapper) {
@@ -24,9 +26,11 @@ public class ProductCartDtoMapper extends BaseDtoMapper {
     }
 
     public List<ProductCartDTO> toProductCartDTOList(List<ProductCart> entities) {
-        return entities.stream()
+        List<ProductCartDTO> productCartDTOS = entities.stream()
                 .map(this::toProductCartDTO)
-                .collect(Collectors.toList());
+                .toList();
+        log.info("Entities ProductCart List was transferred to DTOs ProductCart List");
+        return productCartDTOS;
     }
 
     public ProductCart toProductCartEntity(ProductCartDTO productCartDTO) {
@@ -37,8 +41,10 @@ public class ProductCartDtoMapper extends BaseDtoMapper {
     }
 
     public List<ProductCart> toProductCartEntityList(List<ProductCartDTO> productCartDTOS) {
-        return productCartDTOS.stream()
+        List<ProductCart> productCarts = productCartDTOS.stream()
                 .map(this::toProductCartEntity)
                 .toList();
+        log.info("DTOs ProductCart List was transferred to Entities ProductCart List");
+        return productCarts;
     }
 }

@@ -53,10 +53,11 @@ public class ProductService {
                     .orElse(null);
 
             if (productFromDatabase == null) {
+                log.error("Product with id = " + productId + " doesn't exist on DataBase");
                 return false;
             }
-            if (productFromDatabase.getCurrentPrice() != price ||
-                    productFromDatabase.getQuantity() < quantity) {
+            if (productFromDatabase.getCurrentPrice() != price || productFromDatabase.getQuantity() < quantity) {
+                log.error("Product with id = " + productId + " mismatches with quantity or price in DB");
                 return false;
             }
 
@@ -86,6 +87,10 @@ public class ProductService {
         int counter = 0;
         for (ProductCart product : products) {
             counter += productRepository.updateQuantity(product.getProduct().getId(), -1 * product.getQuantity());
+            log.info("Product with id = " + product.getProduct().getId() + " has been decremented by " + product.getQuantity() + " units");
+        }
+        if (products.size() != counter) {
+            log.error("Some product's quantity wasn't updated");
         }
         return counter;
     }
@@ -95,6 +100,10 @@ public class ProductService {
         int counter = 0;
         for (ProductCartDTO product : products) {
             counter += productRepository.updateQuantity(product.getProductId(), product.getQuantity());
+            log.info("Product with id = " + product.getProductId() + " has been decremented by " + product.getQuantity() + " units");
+        }
+        if (products.size() != counter) {
+            log.error("Some product's quantity wasn't updated");
         }
         return counter;
     }
@@ -111,6 +120,10 @@ public class ProductService {
         int counter = 0;
         for (ProductCart product : products) {
             counter += productRepository.updateQuantity(product.getProduct().getId(), product.getQuantity());
+            log.info("Product with id = " + product.getProduct().getId() + " has been decremented by " + product.getQuantity() + " units");
+        }
+        if (products.size() != counter) {
+            log.error("Some product's quantity wasn't updated");
         }
         return counter;
     }
