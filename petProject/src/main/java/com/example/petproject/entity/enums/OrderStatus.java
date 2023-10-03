@@ -1,4 +1,4 @@
-package com.example.petproject.entity;
+package com.example.petproject.entity.enums;
 
 public enum OrderStatus {
 

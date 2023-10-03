@@ -1,6 +1,5 @@
 package com.example.petproject.dto;
 
-import com.example.petproject.entity.CartStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

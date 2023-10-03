@@ -1,11 +1,10 @@
 package com.example.petproject.entity;
 
+import com.example.petproject.entity.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 //@ToString(exclude = {"user", "products"})

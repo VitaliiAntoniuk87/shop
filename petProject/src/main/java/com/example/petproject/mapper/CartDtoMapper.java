@@ -3,14 +3,12 @@ package com.example.petproject.mapper;
 import com.example.petproject.dto.CartDTO;
 import com.example.petproject.dto.ProductCartDTO;
 import com.example.petproject.entity.Cart;
-import com.example.petproject.entity.CartStatus;
+import com.example.petproject.entity.enums.CartStatus;
 import com.example.petproject.entity.User;
 import com.example.petproject.service.MathServices;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 @Service
 @Log4j2

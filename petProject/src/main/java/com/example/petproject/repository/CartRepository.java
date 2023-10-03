@@ -2,7 +2,7 @@ package com.example.petproject.repository;
 
 import com.example.petproject.entity.Cart;
 
-import com.example.petproject.entity.CartStatus;
+import com.example.petproject.entity.enums.CartStatus;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
