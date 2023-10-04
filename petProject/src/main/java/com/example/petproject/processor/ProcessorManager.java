@@ -15,9 +15,10 @@ import java.util.concurrent.ScheduledExecutorService;
 @Component
 @Log4j2
 @AllArgsConstructor
-public enum ProcessorManager {
-    ;
+public class ProcessorManager {
 
+
+//    private final CartService cartService;
     private final List<ScheduledExecutorService> executorList = new ArrayList<>();
 
     @PostConstruct
@@ -28,11 +29,15 @@ public enum ProcessorManager {
         }
 
         if (AppConstants.CART_CLEAN_UP_PROCESSOR_ACTIVATED) {
+            log.info("Clean up processor running");
             executorList.add(execute(new CartCleanUpProcessor(CartService.builder().build())));
+            log.info("Clean up processor finishing");
         }
 
         if (AppConstants.TEST_PROCESSOR_ACTIVATED) {
+            log.info("test processor running");
             executorList.add(execute(new TestProcessor()));
+            log.info("test processor finishing");
         }
     }
 

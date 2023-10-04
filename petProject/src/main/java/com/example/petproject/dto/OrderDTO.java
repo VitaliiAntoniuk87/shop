@@ -1,6 +1,6 @@
 package com.example.petproject.dto;
 
-import com.example.petproject.entity.enums.OrderStatus;
+import com.example.petproject.entity.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

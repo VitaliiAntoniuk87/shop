@@ -3,7 +3,7 @@ package com.example.petproject.service;
 import com.example.petproject.dto.CartDTO;
 import com.example.petproject.dto.ProductCartDTO;
 import com.example.petproject.entity.Cart;
-import com.example.petproject.entity.enums.CartStatus;
+import com.example.petproject.entity.CartStatus;
 import com.example.petproject.entity.Product;
 import com.example.petproject.entity.ProductCart;
 import com.example.petproject.exception.IncorrectPriceQuantityException;
@@ -238,16 +238,20 @@ public class CartService {
 
     @Transactional
     public void cartAutoCancellation(long timeLimitMinutes) {
+        log.info("method is running");
         LocalDateTime newDateLimit = LocalDateTime.now().minusMinutes(timeLimitMinutes);
-        List<Cart> carts = cartRepository.findAllByCreateDateBeforeAndStatus(newDateLimit, CartStatus.NEW);
+        log.info("got newDateLimit: " + newDateLimit);
+        List<Cart> carts = cartRepository.findAllByCreateDateAndStatus(Timestamp.valueOf(newDateLimit));
+        log.info("find carts " + carts.size());
         List<ProductCart> groupedByProductCarts = getQuantitySumGroupedByProductFromCartList(carts);
-
+        log.info("groupedByProductCarts is done");
         cartRepository.updateCartStatusToCancelledByCreateDate(Timestamp.valueOf(newDateLimit));
         log.info("All Carts created earlier than " + newDateLimit + " have become inactive");
         productService.incrementProductQuantityWithEntity(groupedByProductCarts);
     }
 
     private List<ProductCart> getQuantitySumGroupedByProductFromCartList(List<Cart> carts) {
+        log.info("getQuantitySumGroupedByProductFromCartList is running");
         return carts.stream().flatMap(c -> c.getProducts().stream())
                 .collect(Collectors.groupingBy(
                         ProductCart::getProduct,

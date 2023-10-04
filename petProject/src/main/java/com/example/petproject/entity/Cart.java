@@ -1,6 +1,5 @@
 package com.example.petproject.entity;
 
-import com.example.petproject.entity.enums.CartStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

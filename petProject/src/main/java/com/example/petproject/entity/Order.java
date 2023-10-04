@@ -1,6 +1,5 @@
 package com.example.petproject.entity;
 
-import com.example.petproject.entity.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -2,7 +2,7 @@ package com.example.petproject.repository;
 
 import com.example.petproject.entity.Cart;
 
-import com.example.petproject.entity.enums.CartStatus;
+import com.example.petproject.entity.CartStatus;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -23,8 +23,13 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     List<Cart> findAllByUserIdAndStatus(long id, CartStatus status);
 
     List<Cart> findAllByCreateDateBeforeAndStatus(LocalDateTime createDate, CartStatus status);
+    @Query("""
+            SELECT c FROM Cart c WHERE c.createDate < :createDate AND c.status = 'NEW'
+            """)
+    List<Cart> findAllByCreateDateAndStatus(@Param("createDate") Timestamp createDate);
 
-    Cart findByUserIdAndStatus(long id, CartStatus status);
+    Cart findByUserIdAndStatus(long id, CartStatus cartStatus);
+
 
     Cart findCartByIdAndStatus(long id, CartStatus status);
 
@@ -63,6 +68,5 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
             WHERE c.id = :cartId AND c.status = 'NEW'
             """)
     int updateCartStatusToCompletedById(@Param("cartId") long cartId, @Param("orderId") long orderId);
-
 
 }
