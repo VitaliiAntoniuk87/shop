@@ -1,8 +1,23 @@
 package com.example.petproject.constants;
 
+import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @Component
+@Log4j2
+@AllArgsConstructor
 public class AppConstants {
 
     public static final boolean CART_CLEAN_UP_PROCESSOR_ACTIVATED = true;
@@ -13,5 +28,41 @@ public class AppConstants {
     public static final String LOG_FILES_PATH = "/log";
     public static final boolean TEST_PROCESSOR_ACTIVATED = true;
 
+    public static void init() {
+        String filePath = "src/main/resources/appconstants.txt";
+        Map<String, String> properties = extractPropertiesFromFile(filePath);
+
+    }
+
+    private static Map<String, String> extractPropertiesFromFile(String filePath) {
+        HashMap<String, String> properties = new HashMap<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            Pattern pattern = Pattern.compile("^(.*?)=(.*?)$");
+
+            while ((line = reader.readLine()) != null) {
+                Matcher matcher = pattern.matcher(line);
+
+                if (matcher.matches()) {
+                    String key = matcher.group(1);
+                    String value = matcher.group(2);
+                    properties.put(key.trim(), value.trim());
+                }
+            }
+        } catch (IOException e) {
+            log.error("Error while reading the file");
+        }
+        return properties;
+    }
+
+    private static void updateAppConstants(HashMap<String, String> properties) {
+        Class<? extends AppConstants> myClass = AppConstants.class;
+        Field[] fields = myClass.getDeclaredFields();
+        for (Field field : fields) {
+            field.set(myClass,);
+        }
+
+    }
 
 }

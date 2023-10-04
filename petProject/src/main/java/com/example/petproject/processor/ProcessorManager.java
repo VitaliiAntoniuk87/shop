@@ -18,10 +18,10 @@ import java.util.concurrent.ScheduledExecutorService;
 public class ProcessorManager {
 
 
-//    private final CartService cartService;
+    private final CartService cartService;
+
     private final List<ScheduledExecutorService> executorList = new ArrayList<>();
 
-    @PostConstruct
     synchronized public void init() {
         if (!executorList.isEmpty()) {
             log.error("ProcessorManager: Attempt to concurrent access!");
@@ -30,7 +30,7 @@ public class ProcessorManager {
 
         if (AppConstants.CART_CLEAN_UP_PROCESSOR_ACTIVATED) {
             log.info("Clean up processor running");
-            executorList.add(execute(new CartCleanUpProcessor(CartService.builder().build())));
+            executorList.add(execute(new CartCleanUpProcessor(cartService)));
             log.info("Clean up processor finishing");
         }
 

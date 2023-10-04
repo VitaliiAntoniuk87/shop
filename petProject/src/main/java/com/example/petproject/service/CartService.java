@@ -241,13 +241,17 @@ public class CartService {
         log.info("method is running");
         LocalDateTime newDateLimit = LocalDateTime.now().minusMinutes(timeLimitMinutes);
         log.info("got newDateLimit: " + newDateLimit);
-        List<Cart> carts = cartRepository.findAllByCreateDateAndStatus(Timestamp.valueOf(newDateLimit));
-        log.info("find carts " + carts.size());
-        List<ProductCart> groupedByProductCarts = getQuantitySumGroupedByProductFromCartList(carts);
-        log.info("groupedByProductCarts is done");
-        cartRepository.updateCartStatusToCancelledByCreateDate(Timestamp.valueOf(newDateLimit));
-        log.info("All Carts created earlier than " + newDateLimit + " have become inactive");
-        productService.incrementProductQuantityWithEntity(groupedByProductCarts);
+        List<Cart> carts = cartRepository.findAllByCreateDateAndStatus(newDateLimit);
+        if (!carts.isEmpty()) {
+            log.info("find carts " + carts.size());
+            List<ProductCart> groupedByProductCarts = getQuantitySumGroupedByProductFromCartList(carts);
+            log.info("groupedByProductCarts is done");
+            cartRepository.updateCartStatusToCancelledByCreateDate(newDateLimit);
+            log.info("All Carts created earlier than " + newDateLimit + " have become inactive");
+            productService.incrementProductQuantityWithEntity(groupedByProductCarts);
+        } else {
+            log.error("Cart List is empty");
+        }
     }
 
     private List<ProductCart> getQuantitySumGroupedByProductFromCartList(List<Cart> carts) {

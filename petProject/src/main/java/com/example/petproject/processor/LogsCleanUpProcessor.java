@@ -1,13 +1,10 @@
 package com.example.petproject.processor;
 
 import com.example.petproject.constants.AppConstants;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,44 +19,40 @@ public class LogsCleanUpProcessor extends BatchProcessor {
 
     @Override
     public void run() {
-//        logCleaner(AppConstants.LOG_FILES_PATH)
+        logCleaner();
     }
 
-//    private void logCleaner(String dirPath, long fileSizeLimit) {
-//        Path path = Paths.get(dirPath);
-//        if (Files.exists(path)) {
-//            if (Files.isDirectory(path)) {
-//                try {
-//                    Files.list(path)
-//                            .filter(f -> {
-//                                try {
-//                                    return Files.size(f) > fileSizeLimit;
-//                                } catch (IOException e) {
-//                                    throw new RuntimeException(e);
-//                                }
-//                            })
-//                            .forEach(f -> {
-//                                try (BufferedWriter writer = Files.newBufferedWriter(f, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
-//
-//                                } catch (IOException e) {
-//                                    throw new RuntimeException(e);
-//                                }
-//
-//                            });
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//        } else {
-//            try {
-//                throw new FileNotFoundException();
-//            } catch (FileNotFoundException e) {
-//                log.error("File/Dir not found");
-//            }
-//        }
-//
-//
-//    }
+    private void logCleaner() {
+        Path path = Paths.get(AppConstants.LOG_FILES_PATH);
+
+        try {
+            if (Files.exists(path) && Files.isDirectory(path)) {
+                Files.list(path)
+                        .filter(f -> {
+                            try {
+                                return Files.size(f) > AppConstants.LOG_FILE_SIZE_LIMIT_BYTES;
+                            } catch (IOException e) {
+                                log.error("Error while checking file size");
+                                throw new RuntimeException("Error while checking file size", e);
+                            }
+                        })
+                        .forEach(f -> {
+                            try {
+                                Files.write(f, new byte[0], StandardOpenOption.TRUNCATE_EXISTING);
+                                log.info("Log file " + f.getFileName() + " was cleared");
+                            } catch (IOException e) {
+                                log.error("Error while clearing log file");
+                                throw new RuntimeException("Error while clearing log file", e);
+                            }
+                        });
+            } else {
+                throw new FileNotFoundException("Dir not found or Path is not a Dir");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error while processing log files", e);
+        }
+
+    }
 
 
 }
