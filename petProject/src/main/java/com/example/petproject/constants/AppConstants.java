@@ -8,8 +8,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,9 +26,8 @@ public class AppConstants {
     public static final boolean TEST_PROCESSOR_ACTIVATED = true;
 
     public static void init() {
-        String filePath = "src/main/resources/appconstants.txt";
-        Map<String, String> properties = extractPropertiesFromFile(filePath);
-        updateAppConstants(properties);
+        String filePath = "src/main/resources/appconstants.properties";
+        updateAppConstants(extractPropertiesFromFile(filePath));
     }
 
     private static Map<String, String> extractPropertiesFromFile(String filePath) {
@@ -59,16 +56,31 @@ public class AppConstants {
         Class<? extends AppConstants> myClass = AppConstants.class;
         Set<String> keySet = properties.keySet();
         Field[] fields = myClass.getDeclaredFields();
-        for (String key : keySet) {
-            for (Field field : fields) {
-                if (key.equals(field.getName())) {
+        for (Field field : fields) {
+            for (String key : keySet) {
+                if (field.getName().equals(key)) {
                     try {
-                        field.set(myClass, properties.get(key));
+                        field.set(myClass, parseValue(properties.get(key), field.getType()));
                     } catch (IllegalAccessException e) {
                         log.error("Illegal value for constant " + field.getName());
                     }
                 }
             }
+        }
+    }
+
+    private static Object parseValue(String value, Class<?> type) {
+        if (type == boolean.class || type == Boolean.class) {
+            return Boolean.parseBoolean(value);
+        } else if (type == long.class || type == Long.class) {
+            return Long.parseLong(value);
+        } else if (type == int.class || type == Integer.class) {
+            return Long.parseLong(value);
+        } else if (type == String.class) {
+            return value;
+        } else {
+            log.error("Unsupported data type: " + type.getName());
+            throw new IllegalArgumentException("Unsupported data type: " + type.getName());
         }
     }
 
