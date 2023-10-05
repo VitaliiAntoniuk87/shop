@@ -16,6 +16,5 @@ public class ProjectStartup {
     private void init() {
         AppConstants.init();
         processorManager.init();
-
     }
 }

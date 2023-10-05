@@ -100,7 +100,7 @@ public class ProductService {
         int counter = 0;
         for (ProductCartDTO product : products) {
             counter += productRepository.updateQuantity(product.getProductId(), product.getQuantity());
-            log.info("Product with id = " + product.getProductId() + " has been decremented by " + product.getQuantity() + " units");
+            log.info("Product with id = " + product.getProductId() + " has been incremented by " + product.getQuantity() + " units");
         }
         if (products.size() != counter) {
             log.error("Some product's quantity wasn't updated");
@@ -120,7 +120,7 @@ public class ProductService {
         int counter = 0;
         for (ProductCart product : products) {
             counter += productRepository.updateQuantity(product.getProduct().getId(), product.getQuantity());
-            log.info("Product with id = " + product.getProduct().getId() + " has been decremented by " + product.getQuantity() + " units");
+            log.info("Product with id = " + product.getProduct().getId() + " has been incremented by " + product.getQuantity() + " units");
         }
         if (products.size() != counter) {
             log.error("Some product's quantity wasn't updated");

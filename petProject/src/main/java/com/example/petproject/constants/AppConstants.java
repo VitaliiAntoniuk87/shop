@@ -10,8 +10,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,7 +30,7 @@ public class AppConstants {
     public static void init() {
         String filePath = "src/main/resources/appconstants.txt";
         Map<String, String> properties = extractPropertiesFromFile(filePath);
-
+        updateAppConstants(properties);
     }
 
     private static Map<String, String> extractPropertiesFromFile(String filePath) {
@@ -56,13 +55,21 @@ public class AppConstants {
         return properties;
     }
 
-    private static void updateAppConstants(HashMap<String, String> properties) {
+    private static void updateAppConstants(Map<String, String> properties) {
         Class<? extends AppConstants> myClass = AppConstants.class;
+        Set<String> keySet = properties.keySet();
         Field[] fields = myClass.getDeclaredFields();
-        for (Field field : fields) {
-            field.set(myClass,);
+        for (String key : keySet) {
+            for (Field field : fields) {
+                if (key.equals(field.getName())) {
+                    try {
+                        field.set(myClass, properties.get(key));
+                    } catch (IllegalAccessException e) {
+                        log.error("Illegal value for constant " + field.getName());
+                    }
+                }
+            }
         }
-
     }
 
 }
