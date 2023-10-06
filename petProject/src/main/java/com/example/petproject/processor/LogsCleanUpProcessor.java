@@ -1,6 +1,7 @@
 package com.example.petproject.processor;
 
 import com.example.petproject.constants.AppConstants;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
@@ -19,23 +20,30 @@ public class LogsCleanUpProcessor extends BatchProcessor {
 
     @Override
     public void run() {
+        log.info("logCleaner is running");
         logCleaner();
     }
 
     private void logCleaner() {
         Path path = Paths.get(AppConstants.LOG_FILES_PATH);
-
+        log.info("entering logCleaner");
         try {
             if (Files.exists(path) && Files.isDirectory(path)) {
+                log.info("dir path was validated");
                 Files.list(path)
-                        .filter(f -> {
-                            try {
-                                return Files.size(f) > AppConstants.LOG_FILE_SIZE_LIMIT_BYTES;
-                            } catch (IOException e) {
-                                log.error("Error while checking file size");
-                                throw new RuntimeException("Error while checking file size", e);
-                            }
-                        })
+                        .filter(f ->
+                                {
+                                    try {
+                                        boolean sizeExceedsLimit = Files.size(f) > AppConstants.LOG_FILE_SIZE_LIMIT_BYTES;
+                                        if (sizeExceedsLimit) {
+                                            log.info("Размер файла больше лимита: " + AppConstants.LOG_FILE_SIZE_LIMIT_BYTES);
+                                        }
+                                        return sizeExceedsLimit;
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+                        )
                         .forEach(f -> {
                             try {
                                 Files.write(f, new byte[0], StandardOpenOption.TRUNCATE_EXISTING);

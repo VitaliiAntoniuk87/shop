@@ -250,7 +250,7 @@ public class CartService {
             log.info("All Carts created earlier than " + newDateLimit + " have become inactive");
             productService.incrementProductQuantityWithEntity(groupedByProductCarts);
         } else {
-            log.error("Cart List is empty");
+            log.warn("Cart List is empty");
         }
     }
 

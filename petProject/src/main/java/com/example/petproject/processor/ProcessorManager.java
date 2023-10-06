@@ -29,16 +29,19 @@ public class ProcessorManager {
         }
 
         if (AppConstants.CART_CLEAN_UP_PROCESSOR_ACTIVATED) {
-            log.info("Clean up processor running");
             executorList.add(execute(new CartCleanUpProcessor(cartService)));
-            log.info("Clean up processor finishing");
         }
 
         if (AppConstants.TEST_PROCESSOR_ACTIVATED) {
-            log.info("test processor running");
             executorList.add(execute(new TestProcessor()));
-            log.info("test processor finishing");
         }
+
+        if (AppConstants.LOGS_CLEAN_UP_PROCESSOR_ACTIVATED) {
+            log.info("LogsCleanUpProcessor is running");
+            executorList.add(execute(new LogsCleanUpProcessor()));
+        }
+
+        log.info("ProcessorManager was initialized");
     }
 
     private ScheduledExecutorService execute(BatchProcessor processor) {

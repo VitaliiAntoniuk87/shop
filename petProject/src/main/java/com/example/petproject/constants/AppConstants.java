@@ -4,69 +4,65 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Component
 @Log4j2
 @AllArgsConstructor
 public class AppConstants {
 
-    public static final boolean CART_CLEAN_UP_PROCESSOR_ACTIVATED = true;
-    public static final long CART_AUTO_CANCELLATION_TIMEOUT_MINUTES = 2880;
-    public static final boolean LOGS_CLEAN_UP_PROCESSOR_ACTIVATED = false;
-    public static final long LOGS_CLEAN_UP_PROCESSOR_TIMEOUT_MINUTES = 1440;
-    public static final long LOG_FILE_SIZE_LIMIT_BYTES = 10_000_000_000L;
-    public static final String LOG_FILES_PATH = "/log";
-    public static final boolean TEST_PROCESSOR_ACTIVATED = true;
+    public static boolean CART_CLEAN_UP_PROCESSOR_ACTIVATED = true;
+    public static long CART_AUTO_CANCELLATION_TIMEOUT_MINUTES = 2880;
+    public static boolean LOGS_CLEAN_UP_PROCESSOR_ACTIVATED = false;
+    public static long LOGS_CLEAN_UP_PROCESSOR_TIMEOUT_MINUTES = 1440;
+    public static long LOG_FILE_SIZE_LIMIT_BYTES = 10_000_000_000L;
+    public static String LOG_FILES_PATH = "/log";
+    public static boolean TEST_PROCESSOR_ACTIVATED = true;
 
     public static void init() {
-        String filePath = "src/main/resources/appconstants.properties";
-        updateAppConstants(extractPropertiesFromFile(filePath));
+        String filePath = "src/main/resources/app-constants.properties";
+        updateFromPropertiesFile(filePath);
+        log.info("AppConstants List was updated");
     }
 
-    private static Map<String, String> extractPropertiesFromFile(String filePath) {
-        HashMap<String, String> properties = new HashMap<>();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            Pattern pattern = Pattern.compile("^(.*?)=(.*?)$");
-
-            while ((line = reader.readLine()) != null) {
-                Matcher matcher = pattern.matcher(line);
-
-                if (matcher.matches()) {
-                    String key = matcher.group(1);
-                    String value = matcher.group(2);
-                    properties.put(key.trim(), value.trim());
-                }
-            }
+    private static void updateFromPropertiesFile(String filePath) {
+        Properties properties = new Properties();
+        try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
+            properties.load(fileInputStream);
+            log.info("print property: " + properties.values());
         } catch (IOException e) {
-            log.error("Error while reading the file");
+            log.error("File not found or wrong Path");
+            e.printStackTrace();
         }
-        return properties;
-    }
 
-    private static void updateAppConstants(Map<String, String> properties) {
         Class<? extends AppConstants> myClass = AppConstants.class;
-        Set<String> keySet = properties.keySet();
         Field[] fields = myClass.getDeclaredFields();
-        for (Field field : fields) {
-            for (String key : keySet) {
-                if (field.getName().equals(key)) {
-                    try {
-                        field.set(myClass, parseValue(properties.get(key), field.getType()));
-                    } catch (IllegalAccessException e) {
-                        log.error("Illegal value for constant " + field.getName());
-                    }
+        log.info("fields number: " + fields.length);
+
+        Arrays.stream(fields).forEach(f -> {
+            try {
+                log.info("field name: " + f.getName() + " and value: " + f.get(myClass));
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+            if (properties.get(f.getName()) != null) {
+                try {
+                    log.info("Setting value to " + f.getName());
+                    f.set(myClass, parseValue(properties.get(f.getName()).toString(), f.getType()));
+                    log.info("field name: " + f.getName() + " and new value: " + f.get(myClass));
+                } catch (IllegalAccessException e) {
+                    log.error("");
+                    throw new RuntimeException(e);
                 }
             }
-        }
+        });
+        System.out.println("LOGS_CLEAN_UP_PROCESSOR_ACTIVATED: " + AppConstants.LOGS_CLEAN_UP_PROCESSOR_ACTIVATED);
+        System.out.println("LOG_FILE_SIZE_LIMIT_BYTES: " + AppConstants.LOG_FILE_SIZE_LIMIT_BYTES);
+
     }
 
     private static Object parseValue(String value, Class<?> type) {
@@ -75,7 +71,9 @@ public class AppConstants {
         } else if (type == long.class || type == Long.class) {
             return Long.parseLong(value);
         } else if (type == int.class || type == Integer.class) {
-            return Long.parseLong(value);
+            return Integer.parseInt(value);
+        } else if (type == double.class || type == Double.class) {
+            return Double.parseDouble(value);
         } else if (type == String.class) {
             return value;
         } else {
