@@ -15,6 +15,6 @@ public class CartCleanUpProcessor extends BatchProcessor {
 
     @Override
     public void run() {
-        cartService.cartAutoCancellation(AppConstants.CART_AUTO_CANCELLATION_TIMEOUT_MINUTES);
+        cartService.cartAutoCancellation(AppConstants.NEW_CART_TIMEOUT_TO_AUTO_CANCELLATION_AFTER_CREATION_MINUTES);
     }
 }

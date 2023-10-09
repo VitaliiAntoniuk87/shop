@@ -238,9 +238,8 @@ public class CartService {
 
     @Transactional
     public void cartAutoCancellation(long timeLimitMinutes) {
-        log.info("method is running");
+        log.info("Method cartAutoCancellation is running");
         LocalDateTime newDateLimit = LocalDateTime.now().minusMinutes(timeLimitMinutes);
-        log.info("got newDateLimit: " + newDateLimit);
         List<Cart> carts = cartRepository.findAllByCreateDateAndStatus(newDateLimit);
         if (!carts.isEmpty()) {
             log.info("find carts " + carts.size());
@@ -250,7 +249,7 @@ public class CartService {
             log.info("All Carts created earlier than " + newDateLimit + " have become inactive");
             productService.incrementProductQuantityWithEntity(groupedByProductCarts);
         } else {
-            log.warn("Cart List is empty");
+            log.info("There are no suitable carts for cleaning");
         }
     }
 

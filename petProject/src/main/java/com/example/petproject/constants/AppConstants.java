@@ -14,13 +14,14 @@ import java.util.*;
 @AllArgsConstructor
 public class AppConstants {
 
-    public static boolean CART_CLEAN_UP_PROCESSOR_ACTIVATED = true;
-    public static long CART_AUTO_CANCELLATION_TIMEOUT_MINUTES = 2880;
+    public static boolean CART_CLEAN_UP_PROCESSOR_ACTIVATED = false;
+    public static long NEW_CART_TIMEOUT_TO_AUTO_CANCELLATION_AFTER_CREATION_MINUTES = 2880;
     public static boolean LOGS_CLEAN_UP_PROCESSOR_ACTIVATED = false;
-    public static long LOGS_CLEAN_UP_PROCESSOR_TIMEOUT_MINUTES = 1440;
-    public static long LOG_FILE_SIZE_LIMIT_BYTES = 10_000_000_000L;
-    public static String LOG_FILES_PATH = "/log";
-    public static boolean TEST_PROCESSOR_ACTIVATED = true;
+    public static long LOGS_CLEAN_UP_PROCESSOR_DELAY_MINUTES = 1440;
+    public static long LOG_FILE_SIZE_LIMIT_TO_CLEAR_BYTES = 10_000_000_000L;
+    public static String LOG_FILES_PATH = "log";
+    public static boolean TEST_PROCESSOR_ACTIVATED = false;
+
 
     public static void init() {
         String filePath = "src/main/resources/app-constants.properties";
@@ -28,12 +29,10 @@ public class AppConstants {
         log.info("AppConstants List was updated");
     }
 
-
     private static void updateFromPropertiesFile(String filePath) {
         Properties properties = new Properties();
         try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
             properties.load(fileInputStream);
-            log.info("print property: " + properties.values());
         } catch (IOException e) {
             log.error("File not found or wrong Path");
             e.printStackTrace();
@@ -41,14 +40,8 @@ public class AppConstants {
 
         Class<? extends AppConstants> myClass = AppConstants.class;
         Field[] fields = myClass.getDeclaredFields();
-        log.info("fields number: " + fields.length);
 
         Arrays.stream(fields).forEach(f -> {
-            try {
-                log.info("field name: " + f.getName() + " and value: " + f.get(myClass));
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
             if (properties.get(f.getName()) != null) {
                 try {
                     log.info("Setting value to " + f.getName());
@@ -60,8 +53,6 @@ public class AppConstants {
                 }
             }
         });
-        System.out.println("LOGS_CLEAN_UP_PROCESSOR_ACTIVATED: " + AppConstants.LOGS_CLEAN_UP_PROCESSOR_ACTIVATED);
-        System.out.println("LOG_FILE_SIZE_LIMIT_BYTES: " + AppConstants.LOG_FILE_SIZE_LIMIT_BYTES);
 
     }
 

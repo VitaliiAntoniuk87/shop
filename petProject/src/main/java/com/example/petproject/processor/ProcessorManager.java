@@ -2,7 +2,6 @@ package com.example.petproject.processor;
 
 import com.example.petproject.constants.AppConstants;
 import com.example.petproject.service.CartService;
-import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
@@ -37,11 +36,10 @@ public class ProcessorManager {
         }
 
         if (AppConstants.LOGS_CLEAN_UP_PROCESSOR_ACTIVATED) {
-            log.info("LogsCleanUpProcessor is running");
             executorList.add(execute(new LogsCleanUpProcessor()));
         }
 
-        log.info("ProcessorManager was initialized");
+        log.info("ProcessorExecutorList was initialized");
     }
 
     private ScheduledExecutorService execute(BatchProcessor processor) {
