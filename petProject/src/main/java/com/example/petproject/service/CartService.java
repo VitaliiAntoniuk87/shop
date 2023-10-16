@@ -3,7 +3,7 @@ package com.example.petproject.service;
 import com.example.petproject.dto.CartDTO;
 import com.example.petproject.dto.ProductCartDTO;
 import com.example.petproject.entity.Cart;
-import com.example.petproject.entity.CartStatus;
+import com.example.petproject.entity.enums.CartStatus;
 import com.example.petproject.entity.Product;
 import com.example.petproject.entity.ProductCart;
 import com.example.petproject.exception.IncorrectPriceQuantityException;
@@ -20,7 +20,6 @@ import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

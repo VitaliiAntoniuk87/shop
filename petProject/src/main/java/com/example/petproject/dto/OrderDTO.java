@@ -1,6 +1,7 @@
 package com.example.petproject.dto;
 
-import com.example.petproject.entity.OrderStatus;
+import com.example.petproject.entity.enums.DeliveryType;
+import com.example.petproject.entity.enums.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,16 +19,14 @@ import java.util.List;
 public class OrderDTO {
 
     private long id;
-    private String deliveryType;
+    private DeliveryType deliveryType;
     private String deliveryAddress;
     private LocalDateTime deliveryDate;
     private String comment;
     private String orderRecipientName;
     private String orderRecipientPhone;
-    private double sum;
-    private PublicUserDTO user;
     private OrderStatus status;
     private LocalDateTime createDate;
     private LocalDateTime purchaseDate;
-    private List<ProductDTO> products = new ArrayList<>();
+    private CartDTO cart;
 }

@@ -16,7 +16,6 @@ import java.util.List;
 public class ProductController {
 
     private ProductService productService;
-    private ProductRepository productRepository;
 
     @GetMapping
     public List<ProductDTO> getProducts() {

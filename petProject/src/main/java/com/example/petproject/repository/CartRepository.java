@@ -2,7 +2,7 @@ package com.example.petproject.repository;
 
 import com.example.petproject.entity.Cart;
 
-import com.example.petproject.entity.CartStatus;
+import com.example.petproject.entity.enums.CartStatus;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 

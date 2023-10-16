@@ -1,5 +1,7 @@
 package com.example.petproject.entity;
 
+import com.example.petproject.entity.enums.DeliveryType;
+import com.example.petproject.entity.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,7 +20,8 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "delivery_type")
-    private String deliveryType;
+    @Enumerated(value = EnumType.STRING)
+    private DeliveryType deliveryType;
 
     @Column(name = "delivery_address")
     private String deliveryAddress;
@@ -40,7 +43,7 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(value = EnumType.STRING)
     private OrderStatus status;
 
     @Column(name = "create_date")
