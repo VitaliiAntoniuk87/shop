@@ -1,6 +1,6 @@
 package com.example.petproject.exception;
 
-public class ObjectFieldWrongValueException extends RuntimeException{
+public class ObjectFieldWrongValueException extends RuntimeException {
 
     public ObjectFieldWrongValueException() {
     }

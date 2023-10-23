@@ -1,6 +1,6 @@
 package com.example.petproject.exception;
 
-public class ObjectAlreadyExistException extends Exception{
+public class ObjectAlreadyExistException extends Exception {
 
     public ObjectAlreadyExistException() {
     }

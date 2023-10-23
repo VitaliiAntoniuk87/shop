@@ -1,8 +1,7 @@
 package com.example.petproject.controller;
 
 import com.example.petproject.dto.OrderDTO;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -11,5 +10,13 @@ import java.util.List;
 public class OrderController {
 
 
-//    public List<OrderDTO>
+    @GetMapping("/list/{id}")
+    public List<OrderDTO> getAllByUserId(@PathVariable long id) {
+
+    }
+
+    @PostMapping
+    public OrderDTO saveOrder(@RequestBody OrderDTO orderDTO) {
+
+    }
 }

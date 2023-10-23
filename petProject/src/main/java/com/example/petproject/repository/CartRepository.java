@@ -22,6 +22,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     List<Cart> findAllByUserIdAndStatus(long id, CartStatus status);
 
     List<Cart> findAllByCreateDateBeforeAndStatus(LocalDateTime createDate, CartStatus status);
+
     @Query("""
             SELECT c FROM Cart c WHERE c.createDate < :createDate AND c.status = 'NEW'
             """)
@@ -58,6 +59,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     @Modifying
     @Query("""
             UPDATE Cart c SET c.status = 'CANCELLED' WHERE c.createDate < :createDate AND c.status = 'NEW'
+            AND c.order IS NULL
             """)
     int updateCartStatusToCancelledByCreateDate(@Param("createDate") LocalDateTime createDate);
 

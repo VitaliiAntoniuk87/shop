@@ -26,6 +26,7 @@ public class OrderDTO {
     private String orderRecipientName;
     private String orderRecipientPhone;
     private OrderStatus status;
+    private long userId;
     private LocalDateTime createDate;
     private LocalDateTime purchaseDate;
     private CartDTO cart;

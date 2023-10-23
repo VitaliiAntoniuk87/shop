@@ -90,7 +90,7 @@ public class CartService {
                     return getCartById(cartFromDB.getId());
                 }
             } else {
-                log.error("The validation was failed");
+                log.error("Product validation was failed");
                 throw new IncorrectPriceQuantityException("Product price or quantity is incorrect");
             }
         } else {
