@@ -2,6 +2,7 @@ package com.example.petproject.repository;
 
 import com.example.petproject.entity.Cart;
 
+import com.example.petproject.entity.Order;
 import com.example.petproject.entity.enums.CartStatus;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,7 +22,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     List<Cart> findAllByUserIdAndStatus(long id, CartStatus status);
 
-    List<Cart> findAllByCreateDateBeforeAndStatus(LocalDateTime createDate, CartStatus status);
+    Cart findByUserIdAndStatusAndOrder(long id, CartStatus status, Order order);
 
     @Query("""
             SELECT c FROM Cart c WHERE c.createDate < :createDate AND c.status = 'NEW'
@@ -65,9 +66,16 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     @Modifying
     @Query("""
-            UPDATE Cart c SET c.status = 'COMPLETED', c.order.id = :orderId
+            UPDATE Cart c SET c.status = 'COMPLETED'
+            WHERE c.order.id = :orderId AND c.status = 'NEW'
+            """)
+    int updateCartStatusToCompletedByOrderId(@Param("orderId") long orderId);
+
+    @Modifying
+    @Query("""
+            UPDATE Cart c SET c.order.id = :orderId
             WHERE c.id = :cartId AND c.status = 'NEW'
             """)
-    int updateCartStatusToCompletedById(@Param("cartId") long cartId, @Param("orderId") long orderId);
+    int updateCartOrderByCartId(@Param("cartId") long cartId, @Param("orderId") long orderId);
 
 }

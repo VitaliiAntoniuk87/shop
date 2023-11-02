@@ -14,6 +14,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findAllByUserId(long id);
 
+    Order findOrderById(long id);
+
     @Override
     List<Order> findAll();
 
