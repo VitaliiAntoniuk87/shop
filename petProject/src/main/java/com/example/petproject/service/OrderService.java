@@ -58,7 +58,6 @@ public class OrderService {
         if (cart != null) {
             Order order = orderDtoMapper.toOrderEntity(orderDTO);
             order.setCart(cart);
-            order.setSum(cart.getSum());
             order.setCreateDate(LocalDateTime.now());
             orderRepository.save(order);
             cart.setOrder(order);
@@ -70,5 +69,13 @@ public class OrderService {
         }
     }
 
+    @Transactional
+    public OrderDTO updateOrder(OrderDTO orderDTO) {
+        Order orderFromDB = orderRepository.findOrderById(orderDTO.getId());
+        Order order = orderDtoMapper.toOrderEntity(orderDTO);
+        order.setCart(orderFromDB.getCart());
+        orderRepository.save(order);
+        return orderDtoMapper.toOrderDTO(order);
+    }
 
 }

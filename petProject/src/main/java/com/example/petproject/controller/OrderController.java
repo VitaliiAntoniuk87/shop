@@ -29,5 +29,19 @@ public class OrderController {
         return orderService.getOrderById(id);
     }
 
+    @PutMapping("/details/{id}")
+    public OrderDTO updateOrder(@PathVariable long id, @RequestBody OrderDTO orderDTO) {
+        if (id == orderDTO.getId()) {
+            return orderService.updateOrder(orderDTO);
+        }
+        return null;
+        //todo exception
+    }
+
+    @GetMapping("/delivery")
+    public List<String> getAllowedDeliveryMethods() {
+
+    }
+
 
 }

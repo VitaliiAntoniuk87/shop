@@ -37,8 +37,6 @@ public class Order {
     @Column(name = "order_recipient_phone")
     private String orderRecipientPhone;
 
-    private double sum;
-
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
